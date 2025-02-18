@@ -51,7 +51,7 @@ To get started with applybn, clone the repository and install the required depen
 ```bash
 git clone https://github.com/Anaxagor/applybn.git
 cd applybn
-pip install -r requirements.txt
+poetry install
 ```
 
 ## Usage Example
