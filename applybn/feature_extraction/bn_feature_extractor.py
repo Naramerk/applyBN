@@ -12,7 +12,6 @@ from bamt.preprocess.discretization import code_categories, get_nodes_type
 from bamt.networks import DiscreteBN, ContinuousBN
 from scipy.stats import norm
 
-
 class BNFeatureGenerator(BaseEstimator, TransformerMixin):
     """
     Generates features based on a Bayesian Network (BN).
