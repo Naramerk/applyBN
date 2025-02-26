@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from applybn.feature_extraction.bn_feature_extractor import BNFeatureGenerator
 
+
 @pytest.fixture
 def sample_data():
     return pd.DataFrame({
