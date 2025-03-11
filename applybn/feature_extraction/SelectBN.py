@@ -5,7 +5,6 @@ from bamt.preprocess.discretization import code_categories, get_nodes_type
 from bamt.networks.continuous_bn import ContinuousBN
 from bamt.networks.discrete_bn import DiscreteBN
 
-
 def SelectBN(X, preprocessor):
     """
         decides which Bayesian network to use
