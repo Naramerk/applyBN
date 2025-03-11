@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from pgmpy.estimators import K2Score
 import numpy as np
 from scipy.stats import norm
-from applyBN.applybn.feature_extraction.SelectBN import SelectBN
+from applybn.feature_extraction.SelectBN import SelectBN
 
 class BNFeatureGenerator(BaseEstimator, TransformerMixin):
     """
