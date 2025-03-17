@@ -62,7 +62,13 @@ nav:
   - User Guide:
     - user-guide/concept_explainer.md
     # Small guiding examples for each module
-  
+
+  - Examples:
+      - Tabular Data: examples/tabular_data.md
+      - Time Series Data: examples/time_series_data.md
+      - Synthetic Data Generation: examples/synthetic_data_generation.md
+      - Pipeline Creation: examples/pipeline_creation.md
+
   - API Reference:
       - Core:
           - api/core/core.md
@@ -83,11 +89,6 @@ nav:
           - Time series outlier detection: api/outlier_detection/ts_outliers.md
       - Synthetic data generation: api/synthetic_data_generation.md
       - Pipeline creation: api/pipeline_creation.md
-  - Examples:
-      - Tabular Data: examples/tabular_data.md
-      - Time Series Data: examples/time_series_data.md
-      - Synthetic Data Generation: examples/synthetic_data_generation.md
-      - Pipeline Creation: examples/pipeline_creation.md
 
   - Development and Contribution:
       - development/contributing.md
