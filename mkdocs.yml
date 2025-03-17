@@ -56,16 +56,17 @@ theme:
     code: Roboto Mono
 
 nav:
-  - User Guide:
+  - Getting Started:
     - index.md
-    - user-guide/getting-started.md
-    - user-guide/installation.md
-    # Add concepts and theoretical background?
+    - getting-started/installation.md
+  - User Guide:
+    - user-guide/concept_explainer.md
+    # Small guiding examples for each module
   
   - API Reference:
       - Core:
           - api/core/core.md
-          - logger: api/core/logger.md
+          # - logger: api/core/logger.md
           # - exceptions: api/core/exceptions.md
           # - progress_bar: api/core/progress_bar.md
       - Causal explanation methods:
