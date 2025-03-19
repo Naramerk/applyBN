@@ -2,6 +2,7 @@ import logging
 
 from sklearn.base import BaseEstimator, _fit_context
 from sklearn.utils._param_validation import Options
+from sklearn.exceptions import NotFittedError
 
 from bamt.networks import DiscreteBN, HybridBN, ContinuousBN
 from bamt.utils.GraphUtils import nodes_types
@@ -9,8 +10,10 @@ from bamt.utils.GraphUtils import nodes_types
 from typing import Unpack, Literal, Optional
 from applybn.core.schema import ParamDict
 from applybn.core.logger import Logger
+from applybn.core.exceptions.estimator_exc import NodesAutoTypingError
 
 logger = Logger("estimators", level=logging.DEBUG)
+
 
 class BNEstimator(BaseEstimator):
     """
@@ -37,7 +40,7 @@ class BNEstimator(BaseEstimator):
     def __init__(self,
                  has_logit: bool = False,
                  use_mixture: bool = False,
-                 partial=False,
+                 partial: False | Literal["parameters", "structure"] = False,
                  bn_type: Optional[Literal["hybrid", "disc", "cont"]] = None,
                  learning_params: Optional[Unpack[ParamDict]] = None,
                  ):
@@ -68,7 +71,13 @@ class BNEstimator(BaseEstimator):
         Returns:
             str: The detected type of Bayesian Network.
         """
+
         node_types = nodes_types(data)
+
+        if len(node_types.keys()) != len(data.columns):
+            diff = set(data.columns) - set(node_types.keys())
+            raise NodesAutoTypingError(diff)
+
         nodes_types_unique = set(node_types.values())
 
         net_types2unqiue = {
@@ -102,8 +111,7 @@ class BNEstimator(BaseEstimator):
             case "disc":
                 ...
             case _:
-                logger.error(f"Unknown bn_type, obtained {bn_type}")
-
+                raise TypeError(f"Invalid bn_type, obtained bn_type: {bn_type}")
         return str2net[bn_type](**params)
 
     @_fit_context(prefer_skip_nested_validation=True)
@@ -137,7 +145,7 @@ class BNEstimator(BaseEstimator):
             case "parameters":
                 # todo: check for structure
                 if not self.bn_.edges:
-                    logger.error("Trying to learn parameters on unfitted estimator. Call fit method first.")
+                    raise NotFittedError("Trying to learn parameters on unfitted estimator. Call fit method first.")
                 self.bn_.fit_parameters(clean_data)
             case "structure":
                 self.bn_.add_nodes(descriptor)
@@ -148,56 +156,3 @@ class BNEstimator(BaseEstimator):
                 self.bn_.fit_parameters(X)
 
         return self
-
-# def predict_proba(self, X: pd.DataFrame):
-#     # check_is_fitted(self)
-#     # X = check_array(X)
-#     # todo: turn into vectors? very slow
-#     probas = []
-#     for indx, row in X.iterrows():
-#         anom_index = self.bn.distributions["y"]["classes"].index('1')
-#         try:
-#             result = self.bn.get_dist("y", pvals=row.to_dict())[int(anom_index)]
-#         except KeyError:
-#             result = np.nan
-#         probas.append(result)
-#
-#     return pd.Series(probas)
-#
-# def inject_target(self,
-#                   y,
-#                   data,
-#                   node: Type[BaseNode] = DiscreteNode):
-#     if not self.bn.edges:
-#         # todo
-#         raise Exception("bn.edges is empty")
-#     if not isinstance(y, pd.Series):
-#         # todo
-#         raise Exception("y not a pd.Series")
-#     if not issubclass(node, BaseNode):
-#         # todo
-#         raise Exception("node is not a subclass of BaseNode")
-#
-#     normal_structure = self.bn.edges
-#     info = self.bn.descriptor
-#     nodes = self.bn.nodes
-#     target_name = str(y.name)
-#
-#     bl_add = [(target_name, node_name) for node_name in self.bn.nodes_names]
-#     nodes += [node(target_name)]
-#
-#     info["types"] |= {target_name: "disc"}
-#     info["signs"] = {".0": "mimic value to bypass broken check in bamt"}
-#
-#     self.bn.add_nodes(descriptor=info)
-#
-#     data[target_name] = y.to_numpy()
-#
-#     # noinspection PyTypeChecker
-#     self.bn.add_edges(data=data,
-#                       params={"init_edges": list(map(tuple, normal_structure)),
-#                               "bl_add": bl_add,
-#                               "remove_init_edges": False}
-#                       )
-#
-#     return self
