@@ -1,4 +1,6 @@
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_is_fitted
+
 
 class CorePipeline(Pipeline):
     """
@@ -7,11 +9,10 @@ class CorePipeline(Pipeline):
     def __getattr__(self, attr):
         """If attribute is not found in the pipeline, look in the last step of the pipeline."""
         try:
-            return object.__getattribute__(self, attr)  # Try getting from self first
+            return object.__getattribute__(self, attr)
         except AttributeError:
-            if self.steps:  # Ensure pipeline is not empty
-                last_step = self.steps[-1][1]  # Get the last estimator
-                if hasattr(last_step, attr):
-                    return getattr(last_step, attr)  # Delegate lookup
-            raise  # Raise if the attribute is not found anywhere
+            last_step = self.steps[-1][1]
+            check_is_fitted(self) # actually calls check_is_fitted(self.steps[-1][1])
+            return getattr(last_step, attr)
+
 

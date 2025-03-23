@@ -58,18 +58,43 @@ class BNEstimator(BaseEstimator):
         self.use_mixture = use_mixture
         self.bn_type = bn_type
         self.partial = partial
-        self.learning_params = learning_params
+        self.learning_params = {} if learning_params is None else learning_params
+
+    def _is_fitted(self):
+        """
+         Checks whether the estimator is fitted or not by checking "bn_" key if __dict__.
+         This has to be done because check_is_fitted(self) does not imply correct and goes into recursion because of
+         delegating strategy in getattr method.
+         """
+        return True if "bn_" in self.__dict__ else False
+
+    def __getattr__(self, attr):
+        """If attribute is not found in the pipeline, look in the last step of the pipeline."""
+        try:
+            return object.__getattribute__(self, attr)
+        except AttributeError:
+            if self._is_fitted():
+                return getattr(self.bn_, attr)
+            else:
+                raise NotFittedError("BN Estimator has not been fitted.")
+
 
     @staticmethod
     def detect_bn(data):
         """
         Detects the type of Bayesian Network based on the data.
+        Bamt typing is used.
 
         Args:
             data: The input data to analyze.
 
         Returns:
             str: The detected type of Bayesian Network.
+
+        Raises:
+            None, an error translates into bamt logger.
+            Possible errors:
+                "Unsupported data type. Dtype: {dtypes}"
         """
 
         node_types = nodes_types(data)
@@ -90,15 +115,18 @@ class BNEstimator(BaseEstimator):
         find_matching_key = ({frozenset(s): k for k, v in net_types2unqiue.items() for s in v}).get
         return find_matching_key(frozenset(nodes_types_unique))
 
-    def init_bn(self, bn_type):
+    def init_bn(self, bn_type: Literal["hybrid", "disc", "cont"]):
         """
         Initializes the Bayesian Network based on the type.
 
         Args:
-            bn_type (str): The type of Bayesian Network to initialize.
+            bn_type: The type of Bayesian Network to initialize.
 
         Returns:
             An instance of the corresponding Bayesian Network class.
+
+        Raises:
+            TypeError: Invalid bn_type.
         """
         str2net = {"hybrid": HybridBN, "disc": DiscreteBN, "cont": ContinuousBN}
 
@@ -122,13 +150,16 @@ class BNEstimator(BaseEstimator):
         Fits the Bayesian Network to the data.
 
         Args:
-            X: The input data.
-            y: The target values (default is None).
+            X: a tuple with (X, descriptor, clean_data).
+                If partial is "structure", clean_data can be None (not used).
+            y: not used.
 
         Returns:
             self: The fitted estimator.
         """
+
         # this has to be done because scikit learn unpacking problem
+        # inside pipeline there is unpacking.
         X, descriptor, clean_data = X
         if not self.partial == "parameters":
             if not self.bn_type in ["hybrid", "disc", "cont"]:
@@ -143,16 +174,15 @@ class BNEstimator(BaseEstimator):
 
         match self.partial:
             case "parameters":
-                # todo: check for structure
                 if not self.bn_.edges:
                     raise NotFittedError("Trying to learn parameters on unfitted estimator. Call fit method first.")
                 self.bn_.fit_parameters(clean_data)
             case "structure":
                 self.bn_.add_nodes(descriptor)
-                self.bn_.add_edges(X)
+                self.bn_.add_edges(X, progress_bar=False, **self.learning_params)
             case False:
                 self.bn_.add_nodes(descriptor)
-                self.bn_.add_edges(X)
-                self.bn_.fit_parameters(X)
+                self.bn_.add_edges(X, progress_bar=False, **self.learning_params)
+                self.bn_.fit_parameters(clean_data)
 
         return self

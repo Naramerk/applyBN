@@ -2,7 +2,6 @@ import pytest
 from pandas import Index
 from unittest.mock import MagicMock
 
-from pgmpy.models import BayesianNetwork
 from sklearn.exceptions import NotFittedError
 from applybn.core.estimators.base_estimator import BNEstimator
 from applybn.core.exceptions.estimator_exc import NodesAutoTypingError
@@ -161,9 +160,9 @@ def test_fit_initializes_bn(mock_estimator):
     """Test that fit initializes the Bayesian Network correctly."""
     estimator, mock_bn = mock_estimator
 
-    mock_X = MagicMock()
-    descriptor = MagicMock()
-    clean_data = MagicMock()
+    mock_X = MagicMock(name="X")
+    descriptor = MagicMock(name="descriptor")
+    clean_data = MagicMock(name="clean_data")
 
     estimator.fit((mock_X, descriptor, clean_data))
 
@@ -185,9 +184,9 @@ def test_fit_parameters_case(mock_estimator):
     # Ensure bn_ is already set with edges
     mock_bn.edges = ["edge1", "edge2"]
 
-    mock_X = MagicMock()
-    descriptor = MagicMock()
-    clean_data = MagicMock()
+    mock_X = MagicMock(name="X")
+    descriptor = MagicMock(name="descriptor")
+    clean_data = MagicMock(name="clean_data")
 
     estimator.bn_ = mock_bn  # Manually set to bypass initialization
     estimator.fit((mock_X, descriptor, clean_data))
@@ -203,9 +202,9 @@ def test_fit_parameters_raises_error(mock_estimator):
 
     mock_bn.edges = []  # Simulating an unfitted BN
 
-    mock_X = MagicMock()
-    descriptor = MagicMock()
-    clean_data = MagicMock()
+    mock_X = MagicMock(name="X")
+    descriptor = MagicMock(name="descriptor")
+    clean_data = MagicMock(name="clean_data")
 
     estimator.bn_ = mock_bn  # Manually set to bypass initialization
 
@@ -218,9 +217,9 @@ def test_fit_structure_case(mock_estimator):
     estimator, mock_bn = mock_estimator
     estimator.partial = "structure"
 
-    mock_X = MagicMock()
-    descriptor = MagicMock()
-    clean_data = MagicMock()
+    mock_X = MagicMock(name="X")
+    descriptor = MagicMock(name="descriptor")
+    clean_data = MagicMock(name="clean_data")
 
     estimator.fit((mock_X, descriptor, clean_data))
 
@@ -234,16 +233,16 @@ def test_fit_full_case(mock_estimator):
     estimator, mock_bn = mock_estimator
     estimator.partial = False
 
-    mock_X = MagicMock()
-    descriptor = MagicMock()
-    clean_data = MagicMock()
+    mock_X = MagicMock(name="X")
+    descriptor = MagicMock(name="descriptor")
+    clean_data = MagicMock(name="clean_data")
 
     estimator.fit((mock_X, descriptor, clean_data))
 
     # Ensure all methods were called
     mock_bn.add_nodes.assert_called_once_with(descriptor)
     mock_bn.add_edges.assert_called_once_with(mock_X, progress_bar=False)
-    mock_bn.fit_parameters.assert_called_once_with(mock_X)
+    mock_bn.fit_parameters.assert_called_once_with(clean_data)
 
 def test_attribute_passing(estimator):
     estimator.bn_ = MagicMock(name="bn", spec=HybridBN)
