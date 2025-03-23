@@ -2,10 +2,12 @@ import pytest
 from pandas import Index
 from unittest.mock import MagicMock
 
+from pgmpy.models import BayesianNetwork
 from sklearn.exceptions import NotFittedError
 from applybn.core.estimators.base_estimator import BNEstimator
 from applybn.core.exceptions.estimator_exc import NodesAutoTypingError
 from bamt.log import logger_preprocessor
+from bamt.networks import HybridBN
 
 logger_preprocessor.disabled = True
 
@@ -224,7 +226,7 @@ def test_fit_structure_case(mock_estimator):
 
     # Ensure add_nodes and add_edges were called
     mock_bn.add_nodes.assert_called_once_with(descriptor)
-    mock_bn.add_edges.assert_called_once_with(mock_X)
+    mock_bn.add_edges.assert_called_once_with(mock_X, progress_bar=False)
 
 
 def test_fit_full_case(mock_estimator):
@@ -240,5 +242,13 @@ def test_fit_full_case(mock_estimator):
 
     # Ensure all methods were called
     mock_bn.add_nodes.assert_called_once_with(descriptor)
-    mock_bn.add_edges.assert_called_once_with(mock_X)
+    mock_bn.add_edges.assert_called_once_with(mock_X, progress_bar=False)
     mock_bn.fit_parameters.assert_called_once_with(mock_X)
+
+def test_attribute_passing(estimator):
+    estimator.bn_ = MagicMock(name="bn", spec=HybridBN)
+
+    assert hasattr(estimator, "get_info")
+    assert hasattr(estimator, "add_edges")
+
+
