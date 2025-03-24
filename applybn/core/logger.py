@@ -1,13 +1,12 @@
 import logging
-# import sys
 from rich.logging import RichHandler
-# from typing import Optional, Dict, Any, Union
 
 
 class Logger(logging.Logger):
     _instances = {}
 
     def __new__(cls, name, level=logging.INFO, log_file=None):
+        """Direct implementation of singleton pattern."""
         if name in cls._instances:
             return cls._instances[name]
 
@@ -16,6 +15,7 @@ class Logger(logging.Logger):
         return instance
 
     def __init__(self, name, level=logging.INFO, log_file=None):
+        """Force to rebuild attributes of logger created to avoid side effects of another libs."""
         super().__init__(name, level)
 
         if not self.hasHandlers():

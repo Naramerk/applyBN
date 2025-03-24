@@ -32,24 +32,24 @@ class EstimatorPipelineFactory:
         self.estimator_ = None
 
     @staticmethod
-    def convert_bamt_preprocessor(preprocessor):
+    def convert_bamt_preprocessor(preprocessor: list):
         """
         Converts a BAMT preprocessor to a BamtPreprocessorWrapper.
 
         Args:
-            preprocessor: The BAMT preprocessor to convert.
+            preprocessor (list): The BAMT preprocessor to convert.
 
         Returns:
             BamtPreprocessorWrapper: The wrapped preprocessor.
         """
         return BamtPreprocessorWrapper(preprocessor)
 
-    def __call__(self, preprocessor=None, **params: Unpack[BNEstimatorParams]):
+    def __call__(self, preprocessor: None | list = None, **params: Unpack[BNEstimatorParams]):
         """
         Creates a pipeline with the given preprocessor and parameters.
 
         Args:
-            preprocessor: The preprocessor to use (default is None).
+            preprocessor (Optional[list]): The preprocessor to use (default is None).
             **params: Parameters for the BNEstimator.
 
         Returns:

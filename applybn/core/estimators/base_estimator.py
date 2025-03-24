@@ -1,5 +1,6 @@
 import logging
 
+import pandas as pd
 from sklearn.base import BaseEstimator, _fit_context
 from sklearn.utils._param_validation import Options
 from sklearn.exceptions import NotFittedError
@@ -68,7 +69,7 @@ class BNEstimator(BaseEstimator):
          """
         return True if "bn_" in self.__dict__ else False
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         """If attribute is not found in the pipeline, look in the last step of the pipeline."""
         try:
             return object.__getattribute__(self, attr)
@@ -80,21 +81,21 @@ class BNEstimator(BaseEstimator):
 
 
     @staticmethod
-    def detect_bn(data):
+    def detect_bn(data: pd.DataFrame) -> str:
         """
         Detects the type of Bayesian Network based on the data.
         Bamt typing is used.
 
         Args:
-            data: The input data to analyze.
+            data (pd.DataFrame): The input data to analyze.
 
         Returns:
             str: The detected type of Bayesian Network.
 
         Raises:
-            None, an error translates into bamt logger.
-            Possible errors:
-                "Unsupported data type. Dtype: {dtypes}"
+            None: an error translates into bamt logger.
+                Possible errors:
+                    "Unsupported data type. Dtype: {dtypes}"
         """
 
         node_types = nodes_types(data)
@@ -150,12 +151,12 @@ class BNEstimator(BaseEstimator):
         Fits the Bayesian Network to the data.
 
         Args:
-            X: a tuple with (X, descriptor, clean_data).
+            X (tuple): a tuple with (X, descriptor, clean_data).
                 If partial is "structure", clean_data can be None (not used).
-            y: not used.
+            y (None): not used.
 
         Returns:
-            self: The fitted estimator.
+            self (BNEstimator): The fitted estimator.
         """
 
         # this has to be done because scikit learn unpacking problem
