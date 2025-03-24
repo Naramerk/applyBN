@@ -1,5 +1,3 @@
-from bamt.networks import HybridBN
-
 # Estimators, pipelines and bayesian networks (Advanced)
 
 The purpose of estimators in the core is supporting developers by creating 
