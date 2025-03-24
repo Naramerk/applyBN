@@ -8,7 +8,7 @@ from sklearn.exceptions import NotFittedError
 from bamt.networks import DiscreteBN, HybridBN, ContinuousBN
 from bamt.utils.GraphUtils import nodes_types
 
-from typing import Unpack, Literal, Optional
+from typing import Unpack, Literal
 from applybn.core.schema import ParamDict
 from applybn.core.logger import Logger
 from applybn.core.exceptions.estimator_exc import NodesAutoTypingError
@@ -42,8 +42,8 @@ class BNEstimator(BaseEstimator):
                  has_logit: bool = False,
                  use_mixture: bool = False,
                  partial: False | Literal["parameters", "structure"] = False,
-                 bn_type: Optional[Literal["hybrid", "disc", "cont"]] = None,
-                 learning_params: Optional[Unpack[ParamDict]] = None,
+                 bn_type: Literal["hybrid", "disc", "cont"] | None = None,
+                 learning_params: Unpack[ParamDict] | None = None,
                  ):
         """
         Initializes the BNEstimator with the given parameters.
