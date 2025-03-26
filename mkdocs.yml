@@ -1,6 +1,6 @@
-site_name: applyBN
-repo_name: Anaxagor/applyBN/
-repo_url: https://github.com/Anaxagor/applyBN/
+site_name: applybn
+repo_name: Anaxagor/applybn/
+repo_url: https://github.com/Anaxagor/applybn/
 theme:
   name: material
   locale: en
@@ -60,6 +60,9 @@ theme:
     code: Roboto Mono
 
 nav:
+  - Getting Started:
+    - index.md
+    - getting-started/installation.md
   - User Guide:
     - index.md
     - user-guide/getting-started.md
@@ -68,11 +71,17 @@ nav:
   
   - API Reference:
       - Core:
+          - api/core/core.md
           - logger: api/core/logger.md
           - estimators: api/core/estimators.md
           - estimators_factory: api/core/estimators_factory.md
           # - exceptions: api/core/exceptions.md
           # - progress_bar: api/core/progress_bar.md
+      - Causal explanation methods:
+          - api/explainable/causal_expl.md
+          - Concepts Explanations: api/explainable/concepts_causal.md
+          - Interventional Explanations: api/explainable/interventions_causal.md
+          - CNN Filter Importance: api/explainable/cnn_filter_importance.md
       - Feature extraction: api/feature_extraction.md
       - Feature selection: api/feature_selection.md
       - BN oversampling: api/bn_oversampling.md
