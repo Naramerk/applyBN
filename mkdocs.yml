@@ -65,13 +65,11 @@ nav:
     - getting-started/installation.md
   - User Guide:
     - index.md
-    - user-guide/getting-started.md
-    - user-guide/installation.md
+    - Concept Explainer: user-guide/concept_explainer.md
     # Add concepts and theoretical background?
   
   - API Reference:
       - Core:
-          - api/core/core.md
           - logger: api/core/logger.md
           - estimators: api/core/estimators.md
           - estimators_factory: api/core/estimators_factory.md
@@ -82,15 +80,15 @@ nav:
           - Concepts Explanations: api/explainable/concepts_causal.md
           - Interventional Explanations: api/explainable/interventions_causal.md
           - CNN Filter Importance: api/explainable/cnn_filter_importance.md
-      - Feature extraction: api/feature_extraction.md
-      - Feature selection: api/feature_selection.md
-      - BN oversampling: api/bn_oversampling.md
+      - Data Mining:
+        - Feature extraction: api/feature_extraction.md
+        - Feature selection: api/feature_selection.md
+        - BN oversampling: api/bn_oversampling.md
       - Outlier detection:
           - api/outlier_detection/outlier_detection.md
           - Tabular outlier detection: api/outlier_detection/tabular_outliers.md
           - Time series outlier detection: api/outlier_detection/ts_outliers.md
       - Synthetic data generation: api/synthetic_data_generation.md
-      - Pipeline creation </br> <b>(Subject to remove)</b>: api/pipeline_creation.md
   - Examples:
       - Tabular Data: examples/tabular_data.md
       - Time Series Data: examples/time_series_data.md

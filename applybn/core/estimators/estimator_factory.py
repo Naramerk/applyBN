@@ -16,7 +16,7 @@ class EstimatorPipelineFactory:
     Attributes:
         interfaces (dict): Mapping of task types to their corresponding scikit-learn mixin classes.
         task_type (str): The type of task ('classification' or 'regression').
-        estimator_ (Optional[BaseEstimator]): The estimator instance.
+        estimator_ (None | BaseEstimator): The estimator instance.
     """
     interfaces = {"classification": ClassifierMixin,
                   "regression": RegressorMixin}
@@ -26,7 +26,7 @@ class EstimatorPipelineFactory:
         Initializes the EstimatorPipelineFactory with the given task type.
 
         Args:
-            task_type (str): The type of task ('classification' or 'regression').
+            task_type: The type of task ('classification' or 'regression').
         """
         self.task_type = task_type
         self.estimator_ = None
@@ -37,7 +37,7 @@ class EstimatorPipelineFactory:
         Converts a BAMT preprocessor to a BamtPreprocessorWrapper.
 
         Args:
-            preprocessor (list): The BAMT preprocessor to convert.
+            preprocessor: The BAMT preprocessor to convert.
 
         Returns:
             BamtPreprocessorWrapper: The wrapped preprocessor.
@@ -49,7 +49,7 @@ class EstimatorPipelineFactory:
         Creates a pipeline with the given preprocessor and parameters.
 
         Args:
-            preprocessor (Optional[list]): The preprocessor to use (default is None).
+            preprocessor: The preprocessor to use (default is None).
             **params: Parameters for the BNEstimator.
 
         Returns:
@@ -61,7 +61,6 @@ class EstimatorPipelineFactory:
             discretizer = pp.KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='uniform')
             preprocessor = Preprocessor([('encoder', encoder), ('discretizer', discretizer)])
 
-        # todo: args and kwargs unpacking
         self.estimator.set_params(**params)
 
         wrapped_preprocessor = self.convert_bamt_preprocessor(preprocessor)
@@ -70,7 +69,7 @@ class EstimatorPipelineFactory:
                                  ("bn_estimator", self.estimator_)])
         return pipeline
 
-    def _adjust_interface(self):
+    def _adjust_interface(self) -> None:
         """
         Adjusts the interface of the estimator based on the task type.
         """
@@ -86,7 +85,7 @@ class EstimatorPipelineFactory:
         Returns the estimator instance, creating it if necessary.
 
         Returns:
-            BaseEstimator: The estimator instance.
+            BNEstimatorMixin: The estimator instance with classifier or regressor interface.
         """
         if not self.estimator_:
             self._adjust_interface()

@@ -19,15 +19,6 @@ logger = Logger("estimators", level=logging.DEBUG)
 class BNEstimator(BaseEstimator):
     """
     A Bayesian Network Estimator class that extends scikit-learn's BaseEstimator.
-
-    Use it only in the backend of the library and proceed with caution when out of CorePipeline context.
-
-    Attributes:
-        has_logit (bool): Indicates if logit nodes are used.
-        use_mixture (bool): Indicates if mixture model is used.
-        bn_type (Optional[Literal["hybrid", "disc", "cont"]]): Type of Bayesian Network.
-        partial (Options): Indicates if partial fitting is used.
-        learning_params (Optional[Unpack[ParamDict]]): Parameters for learning.
     """
 
     _parameter_constraints = {
@@ -49,11 +40,11 @@ class BNEstimator(BaseEstimator):
         Initializes the BNEstimator with the given parameters.
 
         Args:
-            has_logit (bool): Indicates if logit transformation is used.
-            use_mixture (bool): Indicates if mixture model is used.
-            partial (Options): Indicates if partial fitting is used.
-            bn_type (Optional[Literal["hybrid", "disc", "cont"]]): Type of Bayesian Network.
-            learning_params (Optional[Unpack[ParamDict]]): Parameters for learning.
+            has_logit: Indicates if logit transformation is used.
+            use_mixture: Indicates if mixture model is used.
+            partial: Indicates if partial fitting is used.
+            bn_type: Type of Bayesian Network.
+            learning_params: Parameters for learning.
         """
         self.has_logit = has_logit
         self.use_mixture = use_mixture
@@ -81,7 +72,7 @@ class BNEstimator(BaseEstimator):
 
 
     @staticmethod
-    def detect_bn(data: pd.DataFrame) -> str:
+    def detect_bn(data: pd.DataFrame) -> Literal["hybrid", "disc", "cont"]:
         """
         Detects the type of Bayesian Network based on the data.
         Bamt typing is used.
@@ -90,7 +81,7 @@ class BNEstimator(BaseEstimator):
             data (pd.DataFrame): The input data to analyze.
 
         Returns:
-            str: The detected type of Bayesian Network.
+            bn_type: The detected type of Bayesian Network.
 
         Raises:
             None: an error translates into bamt logger.
@@ -116,7 +107,7 @@ class BNEstimator(BaseEstimator):
         find_matching_key = ({frozenset(s): k for k, v in net_types2unqiue.items() for s in v}).get
         return find_matching_key(frozenset(nodes_types_unique))
 
-    def init_bn(self, bn_type: Literal["hybrid", "disc", "cont"]):
+    def init_bn(self, bn_type: Literal["hybrid", "disc", "cont"]) -> HybridBN | DiscreteBN | ContinuousBN:
         """
         Initializes the Bayesian Network based on the type.
 
