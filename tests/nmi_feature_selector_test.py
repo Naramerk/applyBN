@@ -10,7 +10,6 @@ def test_discretize():
     """
     data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     discretized_data = NMIFeatureSelector(bin_count=4)._discreticise(data)
-    print(data, discretized_data, sep="\n")
 
     assert len(discretized_data) == len(data) + 1
     assert min(discretized_data) == 0
@@ -41,7 +40,6 @@ def test_nmi_feature_selection():
 
     data.reset_index()
     selected_features = NMIFeatureSelector().fit_transform(data, target)
-    print("done")
 
     # Ensure selected features are valid and have the correct shape
     assert selected_features.shape[1] <= data.shape[1]
