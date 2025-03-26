@@ -11,9 +11,11 @@ from sklearn.ensemble import (
 )
 
 from applybn.core.data_iq import DataIQSKLearn
-from applybn.core import get_logger, track
 
-logger = get_logger(__name__)
+from applybn.core.logger import Logger
+from applybn.core.progress_bar import track
+
+logger = Logger(__name__)
 
 
 class InterventionCausalExplainer:

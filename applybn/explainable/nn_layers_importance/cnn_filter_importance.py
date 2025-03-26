@@ -12,9 +12,9 @@ from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
 
-from applybn.core import get_logger
+from applybn.core.logger import Logger
 
-logger = get_logger(__name__)
+logger = Logger(__name__)
 
 class CausalCNNExplainer:
     """Causal CNN Explainer for measuring filter importance in a convolutional neural network.

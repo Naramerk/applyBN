@@ -9,7 +9,8 @@ packages = [{include = "applybn"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 
-# misc
+# miscellaneous
+setuptools = "75.6.0"
 rich = "^13.0.0"
 
 # ML libraries
@@ -20,17 +21,22 @@ scikit-learn = "^1.5.0"
 imbalanced-learn = "^0.13.0"
 torch = "^2.5.0"
 statsmodels = "^0.14.0"
+opencv-python = "4.11.0.86"
 
 # causal inference libraries
 econml = "0.15.1"
 pgmpy = "0.1.26"
 
+# bayesian tools
+bamt = "^1.2.0"
+
 # plotting
 matplotlib = "^3.9.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "7.4.4"
 pytest-cov = "4.1.0"
+pytest-mock = "*"
 
 [build-system]
 requires = ["poetry-core"]

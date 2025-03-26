@@ -13,9 +13,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 from applybn.core.data_iq import DataIQSKLearn
-from applybn.core import get_logger
+from applybn.core.logger import Logger
 
-logger = get_logger(__name__)
+logger = Logger(__name__)
 
 
 class ConceptCausalExplainer:
