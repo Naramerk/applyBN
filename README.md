@@ -1,4 +1,14 @@
-# applybn
+<p align="center"><h1 align="center">APPLYBN</h1></p>
+<p align="center">
+	<a href="https://itmo.ru/"><img src="https://raw.githubusercontent.com/aimclub/open-source-ops/43bb283758b43d75ec1df0a6bb4ae3eb20066323/badges/ITMO_badge.svg"></a>
+	<img src="https://img.shields.io/github/license/Anaxagor/applybn?style=default&logo=opensourceinitiative&logoColor=white&color=blue" alt="license">
+</p>
+<p align="center">Built with the tools and technologies:</p>
+<p align="center">
+	<img src="https://img.shields.io/badge/Python-3776AB.svg?style=default&logo=Python&logoColor=white"alt="Python">
+	<img src="https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=default&logo=GitHub-Actions&logoColor=white"alt="GitHub%20Actions">
+</p>
+<br>
 
 applybn is an open-source multi-purpose framework based on Bayesian networks and Causal networks.
 The main idea is to implement the main functions of data analysis based on understandable and interpretable algorithms of Bayesian networks and causal models.
