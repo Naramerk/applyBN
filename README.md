@@ -1,6 +1,5 @@
 <p align="center"><h1 align="center">APPLYBN</h1></p>
 <p align="center">
-	<a href="https://itmo.ru/"><img src="https://raw.githubusercontent.com/aimclub/open-source-ops/43bb283758b43d75ec1df0a6bb4ae3eb20066323/badges/ITMO_badge.svg"></a>
 	<img src="https://img.shields.io/github/license/Anaxagor/applybn?style=default&logo=opensourceinitiative&logoColor=white&color=blue" alt="license">
 </p>
 <p align="center">Built with the tools and technologies:</p>
