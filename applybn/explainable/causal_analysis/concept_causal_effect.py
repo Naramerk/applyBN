@@ -1,6 +1,3 @@
-import logging
-from typing import Union
-
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -28,8 +25,8 @@ class ConceptCausalExplainer:
     @staticmethod
     def calculate_confidence_uncertainty(
         X: pd.DataFrame,
-        y: Union[pd.Series, np.ndarray],
-        clf: Union[ClassifierMixin, BaseEstimator],
+        y: pd.Series | np.ndarray,
+        clf: ClassifierMixin | BaseEstimator,
     ) -> tuple:
         """Calculate model confidence and aleatoric uncertainty using DataIQ.
 
