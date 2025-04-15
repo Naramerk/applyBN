@@ -1,6 +1,6 @@
 # Causal analysis based on concepts
 
-[User Guide reference](../../user-guide/exmplainable_module/concept_explainer.md)
+[User Guide reference](../../user-guide/explainable_module/concept_explainer.md)
 
 ::: applybn.explainable.causal_analysis.ConceptCausalExplainer
 

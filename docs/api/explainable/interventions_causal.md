@@ -1,6 +1,6 @@
 # Causal analysis based on interventions
 
-[User Guide reference](../../user-guide/exmplainable_module/interventional_analysis.md)
+[User Guide reference](../../user-guide/explainable_module/interventional_analysis.md)
 
 ::: applybn.explainable.causal_analysis.InterventionCausalExplainer
 

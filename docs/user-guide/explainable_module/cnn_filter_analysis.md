@@ -13,7 +13,9 @@ filter importance through structural equation modeling rather than traditional c
 The module represents CNN filters as nodes in a Directed Acyclic Graph (DAG),
 where edges represent causal relationships between filters in consecutive layers:
 
-$$G = (V, E)$$
+$$
+G = (V, E)
+$$
 
 where $V$ is the set of filters across all layers, and $E$ represents the causal connections between them.
 
