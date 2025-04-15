@@ -125,7 +125,7 @@ class IQRBasedScore(BNBasedScore):
         elif closest_value == lower:
             ref_distance = min_distance
         else:
-            raise Exception
+            raise ValueError("Unexpected state: closest_value does not match either upper or lower bound.")
         result = min(1, current_distance / abs(ref_distance))
 
         return result
