@@ -111,7 +111,9 @@ class BNEstimator(BaseEstimator):
         ).get
         return find_matching_key(frozenset(nodes_types_unique))
 
-    def init_bn(self, bn_type: Literal["hybrid", "disc", "cont"]) -> HybridBN | DiscreteBN | ContinuousBN:
+    def init_bn(
+        self, bn_type: Literal["hybrid", "disc", "cont"]
+    ) -> HybridBN | DiscreteBN | ContinuousBN:
         """
         Initializes the Bayesian Network based on the type.
 

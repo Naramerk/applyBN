@@ -19,7 +19,7 @@ def dummy_data():
 
 @pytest.fixture
 def real_data():
-    df = pd.read_csv("test_data/healthcare.csv", index_col=0)
+    df = pd.read_csv("tests/test_data/healthcare.csv", index_col=0)
     df["anomaly"] = np.random.choice([0, 1], size=df.shape[0], p=[0.6, 0.4])
     return df
 

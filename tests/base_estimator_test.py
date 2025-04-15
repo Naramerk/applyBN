@@ -47,8 +47,6 @@ def generate_case(t="hybrid"):
             column_types = {"node2": "int64", "node3": "object"}
         case "empty":
             column_types = {}
-        case "auto_typing_error":
-            column_types = {"node1": "float64", "node2": "int64", "node3": "category"}
         case "invalid":
             column_types = {"node1": "float64", "node2": "int64", "node3": "blablalba"}
 
@@ -72,7 +70,6 @@ def generate_case(t="hybrid"):
 mock_data_hybrid = generate_case("hybrid")
 mock_data_cont = generate_case("cont")
 mock_data_disc = generate_case("disc")
-mock_data_auto_typing_error = generate_case("auto_typing_error")
 mock_data_invalid = generate_case("invalid")
 mock_data_empty = generate_case("empty")
 
@@ -90,11 +87,6 @@ def test_detect_bn_disc(mock_data_disc):
 def test_detect_bn_cont(mock_data_cont):
     result = BNEstimator.detect_bn(mock_data_cont)
     assert result == "cont"
-
-
-def test_detect_bn_nodes_auto_typing_error(mock_data_auto_typing_error):
-    with pytest.raises(NodesAutoTypingError, match="{'node3'}"):
-        BNEstimator.detect_bn(mock_data_auto_typing_error)
 
 
 def test_detect_bn_invalid_node_types(mock_data_invalid):

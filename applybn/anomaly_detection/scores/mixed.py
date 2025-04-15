@@ -1,4 +1,4 @@
-from anomaly_detection.scores.proximity_based import IsolationForestScore
+from applybn.anomaly_detection.scores.proximity_based import IsolationForestScore
 from applybn.anomaly_detection.scores.proximity_based import LocalOutlierScore
 
 from applybn.anomaly_detection.scores.score import Score

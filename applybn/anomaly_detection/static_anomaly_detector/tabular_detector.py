@@ -1,7 +1,7 @@
 from sklearn.utils.validation import check_is_fitted
 
-from anomaly_detection.displays.results_display import ResultsDisplay
-from anomaly_detection.estimators.tabular_estimator import TabularEstimator
+from applybn.anomaly_detection.displays.results_display import ResultsDisplay
+from applybn.anomaly_detection.estimators.tabular_estimator import TabularEstimator
 
 from applybn.anomaly_detection.scores.mixed import ODBPScore
 from applybn.anomaly_detection.scores.model_based import ModelBasedScore
