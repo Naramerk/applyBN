@@ -19,7 +19,7 @@ def sample_data():
 def sample_target():
     return pd.Series([0, 1, 0, 1, 1, 0, 1, 0, 1, 1])
 
-@pytest.mark.skip(reason="errors w/o raise")
+
 def test_transform(sample_data, sample_target):
     generator = BNFeatureGenerator()
     generator.fit(sample_data, y=sample_target)
@@ -29,7 +29,7 @@ def test_transform(sample_data, sample_target):
     assert list(features.columns) == ["lambda_A", "lambda_B", "lambda_C"]
     assert (features >= 0).all().all() and (features <= 1).all().all()
 
-@pytest.mark.skip(reason="errors w/o raise")
+
 def test_transform_without_target(sample_data):
     generator = BNFeatureGenerator()
     generator.fit(sample_data)
@@ -39,7 +39,7 @@ def test_transform_without_target(sample_data):
     assert list(features.columns) == ["lambda_A", "lambda_B", "lambda_C"]
     assert (features >= 0).all().all() and (features <= 1).all().all()
 
-@pytest.mark.skip(reason="errors w/o raise")
+
 def test_transform_with_missing_feature(sample_data, sample_target):
     generator = BNFeatureGenerator()
     generator.fit(sample_data, y=sample_target)

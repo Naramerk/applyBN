@@ -1,4 +1,4 @@
-from bamt.external.pyitlib.DiscreteRandomVariableUtils import entropy, entropy_joint
+from pyitlib import discrete_random_variable as drv
 from sklearn.feature_selection import SelectorMixin
 from sklearn.base import BaseEstimator
 import pandas as pd
@@ -54,12 +54,12 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
             a, b - pair of pd.Series to calculate NMI.
         """
         if (a.name, None) not in self.entropy_map:
-            self.entropy_map[(a.name, None)] = float(entropy(self._discreticise(a)))
+            self.entropy_map[(a.name, None)] = float(drv.entropy(self._discreticise(a)))
         if (b.name, None) not in self.entropy_map:
-            self.entropy_map[(b.name, None)] = float(entropy(self._discreticise(b)))
+            self.entropy_map[(b.name, None)] = float(drv.entropy(self._discreticise(b)))
         if (a.name, b.name) not in self.entropy_map:
             self.entropy_map[(a.name, b.name)] = float(
-                entropy_joint(self._discreticise(a, b))
+                drv.entropy_joint(self._discreticise(a, b))
             )
 
         Ha = self.entropy_map[(a.name, None)]
