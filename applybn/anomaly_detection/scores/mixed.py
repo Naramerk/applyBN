@@ -16,6 +16,13 @@ from applybn.anomaly_detection.scores.model_based import (
 
 
 class ODBPScore(Score):
+    """
+    A class for Outlier Detection using Bayesian Networks and Proximity-based scoring.
+
+    This class combines model-based scoring (using Bayesian networks) and proximity-based scoring
+    (e.g., Local Outlier Factor or Isolation Forest) to detect anomalies in data.
+    """
+
     _model_estimation_method = {
         "original_modified": BNBasedScore,
         "iqr": IQRBasedScore,
@@ -34,12 +41,26 @@ class ODBPScore(Score):
             Literal["cont", "disc"], Literal["original_modified", "iqr", "cond_ratio"]
         ],
         proximity_estimation_method: Literal["LOF", "IF"],
-        iqr_sensivity=1.5,
-        agg_funcs=None,
-        verbose=1,
-        model_scorer_args=None,
-        additional_scorer_args=None,
+        iqr_sensivity: float = 1.5,
+        agg_funcs: dict =None,
+        verbose: int =1,
+        model_scorer_args:dict=None,
+        additional_scorer_args:dict=None,
     ):
+        """
+        Initializes the ODBPScore object.
+
+        Args:
+            bn: The Bayesian network used for scoring.
+            model_estimation_method: The method for model-based scoring, specified separately for
+                continuous ("cont") and discrete ("disc") variables.
+            proximity_estimation_method: The method for proximity-based scoring ("LOF" or "IF").
+            iqr_sensivity: Sensitivity factor for IQR-based scoring. Default is 1.5.
+            agg_funcs: Aggregation functions for combining scores. Default is None.
+            verbose: Verbosity level for logging. Default is 1.
+            model_scorer_args: Additional arguments for the model-based scorer. Default is None.
+            additional_scorer_args: Additional arguments for the proximity-based scorer. Default is None.
+        """
         super().__init__()
         if agg_funcs is None:
             agg_funcs = dict(proximity=np.sum, model=np.sum)
@@ -81,9 +102,24 @@ class ODBPScore(Score):
         self.verbose = verbose
 
     def __repr__(self):
+        """
+        Returns a string representation of the ODBPScore object.
+
+        Returns:
+            str: A string representation of the object.
+        """
         return f"ODBP Score (proximity={self.proximity_scorer})"
 
-    def separate_cont_disc(self, X):
+    def separate_cont_disc(self, X: pd.DataFrame):
+        """
+        Separates the input data into continuous and discrete variables.
+
+        Args:
+            X: The input data.
+
+        Returns:
+            tuple: A tuple containing two DataFrames: one for discrete variables and one for continuous variables.
+        """
         data_types = self.descriptor["types"]
         cont_vals = ["cont"]
         disc_vals = ["disc", "disc_num"]
@@ -92,24 +128,34 @@ class ODBPScore(Score):
         cont = list(filter(lambda key: data_types.get(key) in cont_vals, data_types))
         return X[disc], X[cont]
 
-    def score(self, X):
+    def score(self, X: pd.DataFrame):
+        """
+        Computes the outlier scores for the input data.
+
+        Combines model-based and proximity-based scores to compute the final outlier score.
+        Deals with continuous and discrete variables separately.
+
+        Args:
+            X: The input data.
+
+        Returns:
+            np.ndarray: An array of outlier scores for the input data.
+        """
         model_factors = self.model_scorer.score(X)
         if self.proximity_scorer:
             proximity_factors = self.proximity_scorer.score(X)
         else:
             proximity_factors = np.zeros_like(model_factors)
 
-        # make zero impact from factors less than 0 since they correspond to inliners
+        # Make zero impact from factors less than 0 since they correspond to inliers
         proximity_factors = np.where(proximity_factors <= 0, 0, proximity_factors)
 
-        # higher the more normal, only
+        # Higher values indicate more normal data
         proximity_outliers_factors = self.agg_funcs["proximity"](
             proximity_factors, axis=1
         )
 
-        # any sign can be here, so we take absolute values since distortion from mean is treated as an anomaly
-        # model_outliers_factors = np.abs(model_factors).sum(axis=1)
-
+        # Take absolute values since distortion from the mean is treated as an anomaly
         model_outliers_factors = self.agg_funcs["model"](np.abs(model_factors), axis=1)
         outlier_factors = proximity_outliers_factors + model_outliers_factors
 
