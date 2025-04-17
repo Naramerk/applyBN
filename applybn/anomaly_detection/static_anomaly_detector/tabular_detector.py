@@ -19,7 +19,6 @@ from applybn.anomaly_detection.anomaly_detection_pipeline import (
     AnomalyDetectionPipeline,
 )
 
-
 class TabularDetector:
     """
     A tabular detector for anomaly detection.
@@ -165,6 +164,16 @@ class TabularDetector:
                 f"Compatible types: {', '.join(method_compatibility[method])}"
             )
 
+    def _validate_target_name(self, X):
+        if self.target_name is not None:
+            if self.target_name not in X.columns:
+                raise KeyError(
+                    f"Target name '{self.target_name}' is not present in {X.columns.tolist()}."
+                )
+            else:
+                return True
+        return False
+
     def fit(self, X: pd.DataFrame, y=None):
         """
         Fits the anomaly detection pipeline to the data.
@@ -179,13 +188,9 @@ class TabularDetector:
         Raises:
             KeyError: If the target column is not found in the input data.
         """
-        if self.target_name is not None:
-            if self.target_name not in X.columns:
-                raise KeyError(
-                    f"Target name '{self.target_name}' is not present in {X.columns.tolist()}."
-                )
-            else:
-                self.y_ = X.pop(self.target_name)
+        X_ = X.copy()
+        if self._validate_target_name(X):
+            self.y_ = X_.pop(self.target_name)
 
         factory = EstimatorPipelineFactory(task_type="classification")
         factory.estimator_ = TabularEstimator()
@@ -193,7 +198,7 @@ class TabularDetector:
 
         ad_pipeline = AnomalyDetectionPipeline.from_core_pipeline(pipeline)
 
-        ad_pipeline.fit(X)
+        ad_pipeline.fit(X_)
 
         self.pipeline_ = ad_pipeline
         return self
@@ -271,7 +276,11 @@ class TabularDetector:
             NotImplementedError: If unsupervised thresholding is not implemented.
         """
         check_is_fitted(self)
-        D = self.decision_function(X)
+        X_ = X.copy()
+        if self._validate_target_name(X):
+            X_.drop(columns=[self.target_name], inplace=True)
+
+        D = self.decision_function(X_)
         if self.y_ is not None:
             best_threshold = self.threshold_search_supervised(self.y_, D)
         else:

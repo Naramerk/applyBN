@@ -25,7 +25,7 @@ class AnomalyDetectionPipeline(CorePipeline):
             callable: The wrapped method with the preprocessor step temporarily disabled.
         """
         @wraps(method)
-        def wrapper(pipeline: AnomalyDetectionPipeline, *args, **kwargs):
+        def wrapper(pipeline, *args, **kwargs):
             """
             Wrapper function to disable and restore the preprocessor step.
 

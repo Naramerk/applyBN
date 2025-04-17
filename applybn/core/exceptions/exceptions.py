@@ -2,8 +2,8 @@ from rich.console import Console
 from rich.traceback import install
 
 # Initialize the console for rich
-console = Console(force_terminal=True, soft_wrap=True)
-install(console=console, width=500)
+console = Console(force_terminal=True)
+install(console=console)
 
 
 class LibraryError(Exception):

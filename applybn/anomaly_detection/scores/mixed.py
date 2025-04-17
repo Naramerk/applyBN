@@ -5,6 +5,7 @@ from applybn.anomaly_detection.scores.score import Score
 from applybn.core.schema import bamt_network
 
 import numpy as np
+import pandas as pd
 
 from typing import Literal
 from applybn.anomaly_detection.scores.model_based import (
@@ -81,6 +82,8 @@ class ODBPScore(Score):
                 self.model_scorer = CombinedIQRandProbRatioScore(
                     scores=model_scorers, bn=bn, **model_scorer_args
                 )
+            else:
+                raise NotImplementedError("Only iqr and cond_ratio mixins are supported.")
         else:
             self.model_scorer = self._model_estimation_method[model_estimation_method](
                 bn=bn, **model_scorer_args
