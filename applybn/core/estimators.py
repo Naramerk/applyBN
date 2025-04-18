@@ -40,8 +40,7 @@ class BNEstimator(BaseEstimator):
             case "disc":
                 params = dict()
             case _:
-                # todo
-                raise Exception("Unknown bn type!")
+                raise ValueError(f"Unknown bn type: {bn_type}. Expected one of: {list(str2net.keys())}")
         self.bn = str2net[bn_type](**params)
 
     @_fit_context(prefer_skip_nested_validation=True)
