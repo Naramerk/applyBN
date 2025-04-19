@@ -65,7 +65,9 @@ nav:
     - getting-started/installation.md
   - User Guide:
     - index.md
-    - Concept Explainer: user-guide/concept_explainer.md
+    - Concept Explainer: user-guide/explainable_module/concept_explainer.md
+    - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
+    - CNN Filter Analysis: user-guide/explainable_module/cnn_filter_analysis.md
     # Add concepts and theoretical background?
   
   - API Reference:
@@ -76,7 +78,6 @@ nav:
           # - exceptions: api/core/exceptions.md
           # - progress_bar: api/core/progress_bar.md
       - Causal explanation methods:
-          - api/explainable/causal_expl.md
           - Concepts Explanations: api/explainable/concepts_causal.md
           - Interventional Explanations: api/explainable/interventions_causal.md
           - CNN Filter Importance: api/explainable/cnn_filter_importance.md
@@ -121,3 +122,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.arithmatex:
+        generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
