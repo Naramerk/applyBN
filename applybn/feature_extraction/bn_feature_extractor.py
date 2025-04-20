@@ -1,340 +1,225 @@
+import pandas as pd
+import bamt.preprocessors as pp
+from typing import Optional
+import logging
+from sklearn import preprocessing
 from sklearn.base import BaseEstimator, TransformerMixin
 import numpy as np
-import random
-from typing import Optional, List, Tuple, Set
-import pandas as pd
-from pgmpy.models import BayesianNetwork
-from pgmpy.estimators import K2Score, BayesianEstimator, BicScore
-from pgmpy.inference import VariableElimination
-import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-
+from scipy.stats import norm
+from applybn.core.estimators.base_estimator import BNEstimator
 class BNFeatureGenerator(BaseEstimator, TransformerMixin):
     """
-    A class for generating new features based on Bayesian Network inference.
-
-    This class constructs a Bayesian Network from input data and uses it to generate
-    new features based on probabilistic inference.
-
-    Attributes:
-        known_structure (Optional[List[Tuple[str, str]]]): A list of edges representing
-            the known structure of the Bayesian Network.
-        bn (Optional[BayesianNetwork]): The constructed Bayesian Network.
-        variables (Optional[List[str]]): List of variable names in the dataset.
-        num_classes (Optional[int]): Number of unique classes in the target variable.
+    Generates features based on a Bayesian Network (BN).
     """
 
-    def __init__(
-        self,
-        known_structure: Optional[List[Tuple[str, str]]] = None,
-        random_seed: Optional[int] = None,
-    ):
+    def __init__(self):
+        self.bn = None
+
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None):
         """
-        Initializes the BNFeatureGenerator.
+        Fits the BNFeatureGenerator to the data.
+
+        This involves:
+        1.  Adding the target variable (if provided) to the input data.
+        2.  Encoding categorical columns.
+        3.  Discretizing continuous columns.
+        4.  Creating a Bayesian Network based on the data types.
+        5.  Learning the structure of the Bayesian Network (if known_structure is not provided).
+        6.  Fitting the parameters of the Bayesian Network.
 
         Args:
-            known_structure (Optional[List[Tuple[str, str]]]): A list of edges
-                representing the known structure of the Bayesian Network.
-        """
-        self.known_structure = known_structure
-        self.bn: Optional[BayesianNetwork] = None
-        self.variables: Optional[List[str]] = None
-        self.num_classes: Optional[int] = None
-        self.random_seed = random_seed
-
-    def fit(
-        self,
-        X: pd.DataFrame,
-        y: Optional[pd.Series] = None,
-        black_list: Optional[List[Tuple[str, str]]] = None,
-    ) -> "BNFeatureGenerator":
-        """
-        Fits the Bayesian Network to the input data.
-
-        Arguments:
-            X (pd.DataFrame): The input dataset.
-            y (Optional[pd.Series]): The target variable.
-            black_list (Optional[List[Tuple[str, str]]]): List of edges to be excluded
-                from the Bayesian Network.
+            X: The input data.
+            y: The target variable. If provided, it will be added to the input data and
+                treated as a node in the Bayesian Network.
 
         Returns:
-            self: The trained instance of BNFeatureGenerator.
-
-        Raises:
-            Exception: If there's an error fitting the BayesianNetwork with known structure.
+            self: The fitted BNFeatureGenerator object.
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
-        self.variables = X.columns.tolist()
-
+        encoder = preprocessing.LabelEncoder()
+        discretizer = preprocessing.KBinsDiscretizer(
+            n_bins = 5,
+            encode = 'ordinal',
+            strategy = 'kmeans',
+            subsample = None
+        )
+        preprocessor = pp.Preprocessor([('encoder', encoder), ('discretizer', discretizer)])
+        target_name = None
         if y is not None:
-            if not isinstance(y, pd.Series):
-                y = pd.Series(y)
-            self.num_classes = len(y.unique())
+            target_name = y.name
+            X = pd.concat([X, y], axis=1).reset_index(drop=True)
+        clean_data = X
 
-        if self.known_structure:
-            self.bn = BayesianNetwork(self.known_structure)
-            try:
-                # Fit the network with known structure
-                self.bn.fit(X, estimator=BayesianEstimator)
-            except Exception as e:
-                logging.exception(
-                    f"Error when training a Bayesian Network with a known structure: {e}"
-                )
-                raise
-        else:
-            # If the structure is unknown, use the constructor to build it
-            constructor = self._BayesianNetworkConstructor(
-                X, black_list, self.random_seed
-            )
-            self.bn = constructor.construct_network()
+        discretized_data, est = preprocessor.apply(X)
+        discretized_data = pd.DataFrame(discretized_data, columns=X.columns)
+
+        # Initializing BNEstimator for BN selection & fitting
+        info = preprocessor.info
+        params = {}
+        if target_name:
+            bl = self.create_black_list(X, target_name)  # Edges to avoid
+            params = {'bl_add': bl}
+        learning_params = {'params': params}
+        bn_estimator = BNEstimator(use_mixture=False, has_logit=True, learning_params=learning_params)
+        L = (discretized_data, info, clean_data)
+        self.bn = bn_estimator.fit(L)
+        self.bn = bn_estimator.bn_
+        logging.info(self.bn.get_info())
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _process_target(self, target_name, X: pd.DataFrame) -> pd.Series:
         """
-        Transforms input data by generating new features based on the trained Bayesian network.
+        Processes the target variable by making predictions using the Bayesian Network.
 
-        Arguments:
-            X (pd.DataFrame): Input dataset for transformation.
+        Args:
+            X: The input data.
 
         Returns:
-            pd.DataFrame: A new DataFrame with generated features.
-
-        Raises:
-            KeyError: If a feature index is missing.
-            Exception: For any other inference error.
+            Predictions for the target variable.
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        if not target_name:
+            return None
 
-        inference = VariableElimination(self.bn)
+        predictions = self.bn.predict(test=X, parall_count=-1, progress_bar=False)
+        return pd.Series(predictions[target_name])
 
-        def process_feature(feature, row):
-            # Get the values of parent nodes for the current feature
-            evidence = {
-                f: row[f] for f in self.bn.get_parents(feature) if f in row.index
-            }
-            try:
-                # Perform probabilistic inference
-                prob = inference.query([feature], evidence=evidence)
-                return prob.values[row[feature]]
-            except KeyError:
-                return 1 / self.num_classes if self.num_classes else 0.5
-            except Exception as e:
-                logging.error(f"Unexpected error in inference: {str(e)}")
-                return 1 / self.num_classes if self.num_classes else 0.5
-
-        def process_row(row):
-            # Process all features for one row
-            return [process_feature(feature, row) for feature in self.variables]
-
-        # Use multithreading to speed up processing
-        with ThreadPoolExecutor() as executor:
-            results = list(executor.map(process_row, [row for _, row in X.iterrows()]))
-        # Form a DataFrame of generated features
-        return pd.DataFrame(results, columns=[f"lambda_{c}" for c in self.variables])
-
-    class _BayesianNetworkConstructor:
+    def transform(self, X: pd.DataFrame, fill_na: bool = True) -> pd.DataFrame:
         """
-        An internal class for constructing a Bayesian Network.
+        Transforms the input DataFrame `X` into a new DataFrame where each column
+        represents the calculated feature based on the fitted BN.
 
-        This class implements methods for creating and modifying the structure
-        of a Bayesian Network based on the input data.
+        Args:
+            X (pd.DataFrame) is the input DataFrame to transform.
 
-        Attributes:
-            data (pd.DataFrame): The input dataset.
-            variables (List[str]): List of variable names in the dataset.
-            repository (List[Tuple[BayesianNetwork, float]]): Repository of best networks.
-            max_repository_size (int): Maximum size of the repository.
-            initial_max_arcs (int): Initial maximum number of arcs allowed.
-            black_list (Set[Tuple[str, str]]): Set of edges to be excluded from the network.
+        Returns:
+            A new DataFrame with lambda-features.
+        """
+        if not self.bn:
+            raise AttributeError("Parameter learning wasn't done. Call fit method")
+
+        results = []
+        X_nodes = X.columns
+        target_name = ({node.name for node in self.bn.nodes}-set(X_nodes))
+        if target_name:
+            target_name = target_name.pop()
+
+        # Process each feature (column) in the row (excluding target) using the BN
+        for _, row in X.iterrows():
+            row_probs = [self.process_feature(feat, row, X, fill_na) for feat in X_nodes]
+            results.append(row_probs)
+
+        result = pd.DataFrame(results, columns=['lambda_' + c for c in X_nodes])
+
+        # Process target
+        target_predictions = self._process_target(target_name, X)
+        if target_predictions is not None:
+            result['lambda_' + target_name] = target_predictions
+
+        return result
+
+    def create_black_list(self, X: pd.DataFrame, y: Optional[str]):
+        if not y:
+            return []
+        target_node = y
+        black_list = [(target_node, (col)) for col in X.columns.to_list() if col != target_node]
+
+        return black_list
+
+    def process_feature(self, feature: str, row: pd.Series, X: pd.DataFrame, fill_na: bool = True):
+
+        """
+        Processes a single feature (node) in the Bayesian network for a given row of data.
+
+        Args:
+            feature: The name of the feature (node) being processed.
+            row: A row from X.
+            X: DataFrame that we transform.
+
+        Returns:
+            The probability or observed value depending on the node type.
         """
 
-        def __init__(
-            self,
-            data: pd.DataFrame,
-            black_list: Optional[List[Tuple[str, str]]] = None,
-            random_seed: Optional[int] = None,
-        ):
-            """
-            Initializes the BayesianNetworkConstructor.
+        node = next((n for n in self.bn.nodes if n.name == feature), None)
+        pvals = {}
+        pvals_disc = []
 
-            Args:
-                data (pd.DataFrame): The input dataset.
-                black_list (Optional[List[Tuple[str, str]]]): List of edges to be excluded
-                    from the Bayesian Network.
-            """
-            self.data = data
-            self.variables = data.columns.tolist()
-            self.repository = []
-            self.max_repository_size = 10
-            self.initial_max_arcs = len(self.variables) // 2
-            self.black_list = set(black_list) if black_list is not None else set()
-            self.random_generator = random.Random(random_seed)
+        # Iterate through the continuous parents
+        for p in node.cont_parents:
+            pvals[p] = row[p]
 
-        def is_valid_edge(self, edge: Tuple[str, str]) -> bool:
-            """
-            Checks if an edge is valid (not in the black list).
+        # Iterate through the discrete parents
+        for p in node.disc_parents:
+            norm_val = str(row[p])
+            pvals[p] = norm_val
+            pvals_disc.append(norm_val)
+        # Process discrete nodes
+        if node.type == 'Discrete' or 'logit' in str(node.type).lower():
+            vals = X[node.name].value_counts(normalize=True).sort_index()
+            vals = [str(i) for i in vals.index.to_list()]
+            return self._process_discrete_node(feature, row, pvals, vals, fill_na)
+        # Process non-discrete nodes
+        else:
+            vals = X[node.name].value_counts(normalize=True).sort_index()
+            vals = [(i) for i in vals.index.to_list()]
+            return self._process_non_discrete_node(feature, row, pvals, vals, fill_na)
 
-            Args:
-                edge (Tuple[str, str]): The edge to check.
+    def _process_discrete_node(self, feature, row, pvals, vals, fill_na):
+        """
+        Processes a discrete node.
 
-            Returns:
-                bool: True if the edge is valid, False otherwise.
-            """
-            return edge not in self.black_list
+        Args:
+            node - the discrete node object.
+            feature (str): the name of the feature (node).
+            row (pd.Series): a row of data from the DataFrame.
+            pvals (dict): list of parent values.
+            vals: possible values of the 'feature'.
 
-        def create_forest_structure(self):
-            """
-            Creates an initial forest structure for the Bayesian Network.
+        Returns:
+            float: value of a new feature.
+        """
 
-            Returns:
-                BayesianNetwork: The initial forest structure.
-            """
-            nodes = self.variables.copy()
-            edges = []
-            used_nodes = {nodes.pop(0)}
-            while nodes:
-                child = nodes.pop(0)
-                valid_parents = [
-                    p for p in used_nodes if self.is_valid_edge((p, child))
-                ]
-                if valid_parents:
-                    parent = self.random_generator.choice(valid_parents)
-                    edges.append((parent, child))
-                    used_nodes.add(child)
-                else:
-                    used_nodes.add(child)
+        obs_value = str(row[feature])
+        if fill_na:
+            imputed_value = pd.Series(vals).value_counts(normalize=True).get(obs_value, 0.0)
+        else:
+            imputed_value = np.nan
+        try:
+            dist = self.bn.get_dist(feature, pvals=pvals).get()
+            idx = dist[1].index(obs_value)
+            return dist[0][idx]
+        except:
+            logging.exception("Distribution not found for node %s and value %s; setting to %s", feature, str(obs_value), str(imputed_value))
+            return imputed_value
 
-            return BayesianNetwork(edges)
+    def _process_non_discrete_node(self, feature, row, pvals, vals, fill_na):
+        """
+        Processes a non-discrete node.
 
-        def calculate_network_score(
-            self, network: BayesianNetwork, sample_data: pd.DataFrame
-        ) -> float:
-            """
-            Calculates the score of a given Bayesian Network.
+        Args:
+            feature (str): the name of the feature (node).
+            row (pd.Series): a row of data from the DataFrame.
+            pvals (dict): list of parent values.
+            vals: possible values of the 'feature'.
 
-            Args:
-                network (BayesianNetwork): The Bayesian Network to score.
-                sample_data (pd.DataFrame): A sample of the data to use for scoring.
-
-            Returns:
-                float: The calculated score of the network.
-            """
-            score = BicScore(data=sample_data)
-            total_score = 0
-            for node in network.nodes():
-                parents = list(network.get_parents(node))
-                # Add a penalty for model complexity
-                penalty = len(parents) * 0.1
-                total_score += score.local_score(node, parents) - penalty
-            return total_score
-
-        def modify_network(self, network, max_arcs: int) -> BayesianNetwork:
-            """
-            Modifies the given Bayesian Network by adding, deleting, or reversing edges.
-
-            Args:
-                network (BayesianNetwork): The Bayesian Network to modify.
-                max_arcs (int): The maximum number of arcs allowed in the network.
-
-            Returns:
-                BayesianNetwork: The modified Bayesian Network.
-
-            Raises:
-                ValueError: If the modification results in an invalid network structure.
-                Exception: For any unexpected errors during modification.
-            """
-            edges = list(network.edges())
-            if (
-                not edges
-                and self.random_generator.choice(["add", "delete", "reverse"]) != "add"
-            ):
-                # If no edges exist, we can only add
-                return network
-            # Choose operation to perform
-            operation = self.random_generator.choice(["add", "delete", "reverse"])
-            new_edges = edges.copy()
-            try:
-                if operation == "add" and len(edges) < max_arcs:
-                    attempts = 0
-                    while attempts < 10:
-                        node1, node2 = self.random_generator.sample(self.variables, 2)
-                        new_edge = (node1, node2)
-                        reverse_edge = (node2, node1)
-                        # Check that the edge doesn't exist and isn't blacklisted
-                        if (
-                            new_edge not in edges
-                            and reverse_edge not in edges
-                            and self.is_valid_edge(new_edge)
-                        ):
-                            new_edges.append(new_edge)
-                            break
-                        attempts += 1
-                elif operation == "delete" and edges:
-                    edge = self.random_generator.choice(edges)
-                    new_edges.remove(edge)
-                elif operation == "reverse" and edges:
-                    edge = self.random_generator.choice(edges)
-                    reverse_edge = (edge[1], edge[0])
-                    if self.is_valid_edge(reverse_edge):
-                        new_edges.remove(edge)
-                        new_edges.append(reverse_edge)
-                # Validate the new network
-                new_network = BayesianNetwork(new_edges)
-                new_network.check_model()
-                return new_network
-            except ValueError as ve:
-                # For cycles or invalid edges
-                logging.exception(f"Invalid edge operation: {ve}")
-            except Exception as e:
-                # For unexpected errors
-                logging.exception(f"Error modifying network: {e}")
-            return network
-
-        def construct_network(self, iterations: int = 100) -> BayesianNetwork:
-            """
-            Constructs the Bayesian Network through an iterative process.
-
-            Args:
-                iterations (int): The number of iterations for network construction.
-
-            Returns:
-                 BayesianNetwork: The constructed Bayesian Network.
-            """
-            current_network = self.create_forest_structure()
-            sample_size = max(len(self.data) // 10, 2)
-            max_arcs = self.initial_max_arcs
-            # Start with a forest structure
-            current_score = self.calculate_network_score(
-                current_network, self.data.sample(n=sample_size)
-            )
-
-            for i in range(iterations):
-                # Increase sample size and maximum number of arcs every quarter of iterations
-                if i % (iterations // 4) == 0:
-                    sample_size = min(sample_size * 2, len(self.data))
-                    max_arcs = min(max_arcs + 2, len(self.variables) * 2)
-
-                sample_data = self.data.sample(n=sample_size)
-                new_network = self.modify_network(current_network, max_arcs)
-                new_score = self.calculate_network_score(new_network, sample_data)
-
-                if new_score > current_score:
-                    # If the new network is better, update the current one and add to the repository
-                    current_network = new_network
-                    current_score = new_score
-                    self.repository.append((new_network, new_score))
-                    self.repository.sort(key=lambda x: x[1], reverse=True)
-                    self.repository = self.repository[: self.max_repository_size]
-                elif self.repository:
-                    # If the new network is not better, choose a network from the repository
-                    current_network, current_score = random.choice(self.repository)
-                    current_network = self.modify_network(current_network, max_arcs)
-
-            # Fit the final network on all data
-            current_network.fit(self.data, estimator=BayesianEstimator)
-            return current_network
+        Returns:
+            float: value of a new feature.
+        """
+        obs_value = row[feature]
+        if fill_na:
+            imputed_value = (pd.Series(vals) <= obs_value).mean() if isinstance(vals, list) else (vals <= obs_value).mean()
+        else:
+            imputed_value = np.nan
+        try:
+            dist = self.bn.get_dist(feature, pvals=pvals).get()
+            mean, variance = dist
+            if np.isnan(mean) or np.isnan(variance):
+                return imputed_value
+            sigma = variance
+            prob = norm.cdf(obs_value, loc=mean, scale=sigma)
+            if np.isnan(prob): # if std is 0
+                return imputed_value
+            return prob
+        except:
+            logging.exception("Distribution not found for node %s and value %s; setting to %s", feature, str(obs_value), str(imputed_value))
+            return imputed_value
