@@ -6,42 +6,17 @@ from sklearn.ensemble import IsolationForest
 import numpy as np
 import pandas as pd
 
-class LocalOutlierScore(Score):
-    """
-    A class for computing outlier scores using the Local Outlier Factor (LOF) algorithm.
-    """
-
+class ProximityBasedScore(Score):
     def __init__(self,
-                 proximity_steps: int=5,
-                 verbose:int=1, **kwargs):
-        """
-        Initializes the LocalOutlierScore object.
-
-        Args:
-            proximity_steps: The number of proximity steps to perform. Default is 5.
-            verbose: The verbosity level for logging. Default is 1.
-            **kwargs: Additional parameters for the Local Outlier Factor algorithm.
-        """
+                 verbose: int,
+                 proximity_steps: int = 5):
         super().__init__(verbose)
-        self.params = kwargs
         self.proximity_steps = proximity_steps
 
     def local_score(self, X: pd.DataFrame):
-        """
-        Computes the local outlier scores for the given data using the LOF algorithm.
+        pass
 
-        Args:
-            X: The input data.
-
-        Returns:
-            np.ndarray: An array of negative outlier factors, where higher values indicate more abnormal data points.
-        """
-        clf = LocalOutlierFactor(**self.params)
-        clf.fit(X)
-        # The higher the value, the more abnormal the data point
-        return np.negative(clf.negative_outlier_factor_)
-
-    def score(self, X: pd.DataFrame):
+    def score(self, X: pd.DataFrame) -> np.ndarray:
         """
         Computes the proximity-based outlier scores for the given data.
 
@@ -90,22 +65,58 @@ class LocalOutlierScore(Score):
         return np.vstack(proximity_factors).T
 
 
-class IsolationForestScore(Score):
+class LocalOutlierScore(ProximityBasedScore):
+    """
+    A class for computing outlier scores using the Local Outlier Factor (LOF) algorithm.
+    """
+
+    def __init__(self,
+                 proximity_steps: int=5,
+                 verbose:int=1, **kwargs):
+        """
+        Initializes the LocalOutlierScore object.
+
+        Args:
+            proximity_steps: The number of proximity steps to perform. Default is 5.
+            verbose: The verbosity level for logging. Default is 1.
+            **kwargs: Additional parameters for the Local Outlier Factor algorithm.
+        """
+        super().__init__(proximity_steps=proximity_steps, verbose=verbose)
+        self.params = kwargs
+
+    def local_score(self, X: pd.DataFrame):
+        """
+        Computes the local outlier scores for the given data using the LOF algorithm.
+
+        Args:
+            X: The input data.
+
+        Returns:
+            np.ndarray: An array of negative outlier factors, where higher values indicate more abnormal data points.
+        """
+        clf = LocalOutlierFactor(**self.params)
+        clf.fit(X)
+        # The higher the value, the more abnormal the data point
+        return np.negative(clf.negative_outlier_factor_)
+
+class IsolationForestScore(ProximityBasedScore):
     """
     A class for computing outlier scores using the Isolation Forest algorithm.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 proximity_steps: int=5,
+                 verbose:int=1, **kwargs):
         """
         Initializes the IsolationForestScore object.
 
         Args:
             **kwargs: Additional parameters for the Isolation Forest algorithm.
         """
-        super().__init__()
+        super().__init__(verbose=verbose, proximity_steps=proximity_steps)
         self.params = kwargs
 
-    def score(self, X: pd.DataFrame):
+    def local_score(self, X: pd.DataFrame):
         """
         Computes the outlier scores for the given data using the Isolation Forest algorithm.
 

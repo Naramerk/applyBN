@@ -65,16 +65,20 @@ nav:
     - getting-started/installation.md
   - User Guide:
     - index.md
-    - Concept Explainer: user-guide/explainable_module/concept_explainer.md
-    - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
-    - CNN Filter Analysis: user-guide/explainable_module/cnn_filter_analysis.md
+    - Causal explanation methods:
+      - Concept Explainer: user-guide/explainable_module/concept_explainer.md
+      - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
+      - CNN Filter Analysis: user-guide/explainable_module/cnn_filter_analysis.md
+    - Anomaly Detection:
+      - Tabular Data: user-guide/anomaly_detection_module/tabular_detection.md
+      - Time-Series Data: user-guide/anomaly_detection_module/time_series_detection.md
     # Add concepts and theoretical background?
   
   - API Reference:
       - Core:
-          - logger: api/core/logger.md
           - estimators: api/core/estimators.md
           - estimators_factory: api/core/estimators_factory.md
+          - logger: api/core/logger.md
           # - exceptions: api/core/exceptions.md
           # - progress_bar: api/core/progress_bar.md
       - Causal explanation methods:
@@ -86,9 +90,9 @@ nav:
         - Feature selection: api/feature_selection.md
         - BN oversampling: api/bn_oversampling.md
       - Outlier detection:
-          - api/outlier_detection/outlier_detection.md
-          - Tabular outlier detection: api/outlier_detection/tabular_outliers.md
-          - Time series outlier detection: api/outlier_detection/ts_outliers.md
+          - Tabular outlier detection: api/anomaly_detection/tabular_outliers.md
+          - Time series outlier detection: api/anomaly_detection/ts_outliers.md
+          - Scores: api/anomaly_detection/scores.md
       - Synthetic data generation: api/synthetic_data_generation.md
   - Examples:
       - Tabular Data: examples/tabular_data.md
