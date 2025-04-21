@@ -38,7 +38,7 @@ preprocessor.fit(X)
 ```
 
 ## Step 2: Define Feature Generation Methods
-
+### 2.1: Original Features
 ```python
 def generate_original_features(X_train, X_test, preprocessor):
     """Generate original features with scaling."""
@@ -51,7 +51,9 @@ def generate_original_features(X_train, X_test, preprocessor):
         columns=X_test.columns
     )
     return X_train_scaled, X_test_scaled
-
+```
+### 2.2: Polynomial Features
+```python
 def generate_polynomial_features(X_train, X_test, preprocessor):
     """Generate polynomial features (degree 2)."""
     # Preprocess data
@@ -69,7 +71,9 @@ def generate_polynomial_features(X_train, X_test, preprocessor):
     X_test_features = pd.DataFrame(X_test_poly, columns=feature_names)
     
     return X_train_features, X_test_features
-
+```
+### 2.3: Interaction Features
+```python
 def generate_interaction_features(X_train, X_test, preprocessor):
     """Generate interaction features (pairwise multiplication)."""
     # Preprocess data
@@ -88,7 +92,9 @@ def generate_interaction_features(X_train, X_test, preprocessor):
                 X_test_interact[f'interaction_{feat1}_{feat2}'] = X_test_scaled[feat1] * X_test_scaled[feat2]
     
     return X_train_interact, X_test_interact
-
+```
+### 2.4: Bayesian Network Features
+```python
 def generate_bayesian_network_features(X_train, X_test, y_train):
     """Generate features using Bayesian Network."""
     # Initialize BN generator
@@ -104,15 +110,11 @@ def generate_bayesian_network_features(X_train, X_test, y_train):
     for col in X_train_bn.columns:
         if X_train_bn[col].dtype == 'object':
             encoders[col] = LabelEncoder()
-            encoders[col].fit(list(X_train_bn[col].unique()) + ['unknown'])
+            encoders[col].fit(X_train_bn[col].unique()) 
             X_train_bn[col] = encoders[col].transform(X_train_bn[col])
     
     for col in X_test_bn.columns:
         if col in encoders and X_test_bn[col].dtype == 'object':
-            # Handle unseen values
-            X_test_bn[col] = X_test_bn[col].apply(
-                lambda x: 'unknown' if x not in encoders[col].classes_ else x
-            )
             X_test_bn[col] = encoders[col].transform(X_test_bn[col])
     
     return X_train_bn, X_test_bn
@@ -265,11 +267,11 @@ g = sns.barplot(x='Feature Type', y='Accuracy', hue='Model', data=results_df)
 plt.title('Model Accuracy by Feature Generation Method')
 plt.xlabel('Feature Generation Method')
 plt.ylabel('Accuracy (5-fold CV)')
-plt.ylim(0.95, 1.0)  # Adjust as needed for your results
+plt.ylim(0.9, 1.0)  
 plt.xticks(rotation=45)
 plt.legend(title='Model')
 plt.tight_layout()
-plt.savefig('feature_comparison.png')
+plt.show()
 
 # Visualize feature importance for the best model
 print("\n\n" + "="*80)
@@ -290,7 +292,7 @@ if 'importance' in all_results[best_model][best_feature]:
     plt.xlabel('Importance')
     plt.ylabel('Feature')
     plt.tight_layout()
-    plt.savefig('feature_importance.png')
+    plt.show()
 ```
 
 ## Example Results
@@ -298,9 +300,9 @@ if 'importance' in all_results[best_model][best_feature]:
 When running this code on the Wilt dataset, the Bayesian Network features consistently outperform traditional feature engineering methods, particularly when combined with SVC:
 
 ```
-======================================================================
+================================================================================
 BEST MODELS SUMMARY
-======================================================================
+================================================================================
 
 Best model with Original features: SVC
   Accuracy: 0.9806 (±0.0047)
@@ -315,21 +317,12 @@ Best model with Interaction features: Decision Tree
   F1 Score: 0.8822 (±0.0170)
 
 Best model with Bayesian Network features: SVC
-  Accuracy: 0.9845 (±0.0024)
-  F1 Score: 0.9211 (±0.0143)
+  Accuracy: 0.9833 (±0.0016)
+  F1 Score: 0.9168 (±0.0124)
 ```
 
 ![feature_comparison](https://github.com/user-attachments/assets/feature_comparison.png)
 
 ## Conclusion
 
-This example demonstrates the effectiveness of Bayesian Network feature generation compared to traditional feature engineering methods. The BNFeatureGenerator captures complex dependencies in the data that are not easily represented by simple polynomial or interaction features. 
-
-Key advantages of BNFeatureGenerator include:
-
-1. Automatic discovery of feature dependencies
-2. Generation of more informative features that improve model performance
-3. Consistent performance across different model types 
-4. More stable predictions as evidenced by lower standard deviations in cross-validation
-
-This approach is particularly valuable for datasets where the relationships between features are complex and non-linear, offering a powerful alternative to manual feature engineering. 
+This example demonstrates the effectiveness of Bayesian Network feature generation compared to traditional feature engineering methods. The BNFeatureGenerator captures complex dependencies in the data that are not easily represented by polynomial or interaction features. 
