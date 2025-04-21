@@ -320,8 +320,7 @@ Best model with Bayesian Network features: SVC
   Accuracy: 0.9833 (±0.0016)
   F1 Score: 0.9168 (±0.0124)
 ```
-
-![feature_comparison](https://github.com/user-attachments/assets/feature_comparison.png)
+![Figure_111](https://github.com/user-attachments/assets/cd2004f8-5c25-4ce8-8d06-e5a57ebadd95)
 
 ## Conclusion
 
