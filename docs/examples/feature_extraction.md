@@ -13,7 +13,7 @@ testing_data = pd.read_csv('data/feature_extraction/wilt/testing.csv')
 combined_data = pd.concat([training_data, testing_data], ignore_index=True)
 
 # Separate features and target
-X = combined_data.drop("class", axis=1)  # Assuming 'class' is the target column
+X = combined_data.drop("class", axis=1) 
 y = combined_data["class"]
 
 # Create preprocessing pipeline
