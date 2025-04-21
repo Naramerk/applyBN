@@ -259,27 +259,6 @@ plt.xticks(rotation=45)
 plt.legend(title='Model')
 plt.tight_layout()
 plt.show()
-
-# Visualize feature importance for the best model
-print("\n\n" + "="*80)
-print("FEATURE IMPORTANCE VISUALIZATION")
-print("="*80)
-
-print(f"\nBest overall model: {best_model} with {best_feature} features")
-print(f"Accuracy: {all_results[best_model][best_feature]['accuracy']:.4f} (±{all_results[best_model][best_feature]['accuracy_std']:.4f})")
-
-if 'importance' in all_results[best_model][best_feature]:
-    importance = all_results[best_model][best_feature]['importance']
-    top_n = min(20, len(importance))
-    
-    plt.figure(figsize=(12, 8))
-    top_importance = importance.sort_values(ascending=False).head(top_n)
-    sns.barplot(x=top_importance.values, y=top_importance.index)
-    plt.title(f'Top {top_n} Feature Importance - {best_model} with {best_feature} features')
-    plt.xlabel('Importance')
-    plt.ylabel('Feature')
-    plt.tight_layout()
-    plt.show()
 ```
 
 ## Example Results
@@ -308,6 +287,30 @@ Best model with Bayesian Network features: SVC
   F1 Score: 0.9168 (±0.0124)
 ```
 ![Figure_111](https://github.com/user-attachments/assets/d3689591-0e05-432a-b00d-1ac256b4e75f)
+
+```python
+# Visualize feature importance for the best model
+print("\n\n" + "="*80)
+print("FEATURE IMPORTANCE VISUALIZATION")
+print("="*80)
+
+print(f"\nBest overall model: {best_model} with {best_feature} features")
+print(f"Accuracy: {all_results[best_model][best_feature]['accuracy']:.4f} (±{all_results[best_model][best_feature]['accuracy_std']:.4f})")
+
+if 'importance' in all_results[best_model][best_feature]:
+    importance = all_results[best_model][best_feature]['importance']
+    top_n = min(20, len(importance))
+    
+    plt.figure(figsize=(12, 8))
+    top_importance = importance.sort_values(ascending=False).head(top_n)
+    sns.barplot(x=top_importance.values, y=top_importance.index)
+    plt.title(f'Top {top_n} Feature Importance - {best_model} with {best_feature} features')
+    plt.xlabel('Importance')
+    plt.ylabel('Feature')
+    plt.tight_layout()
+    plt.show()
+```
+![image](https://github.com/user-attachments/assets/8a9da7ab-9753-4e4b-b38e-1ceb3f1530e6)
 
 ## Conclusion
 
