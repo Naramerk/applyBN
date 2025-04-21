@@ -2,7 +2,7 @@
 
 ## NMIFeatureSelector
 
-::: applybn.feature_selection.bn_feature_selector.NMIFeatureSelector
+::: applybn.feature_selection.bn_nmi_feature_selector.NMIFeatureSelector
 
 ## CausalFeatureSelector
 
