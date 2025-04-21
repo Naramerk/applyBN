@@ -37,23 +37,6 @@ These lambda-features capture complex probabilistic relationships that linear mo
 - The probabilistic "unexpectedness" of values in context
 - Local causal neighborhood effects
 
-## Implementation Details
-
-The BNFeatureGenerator is implemented as a scikit-learn compatible transformer, allowing it to be easily integrated into machine learning pipelines. Key implementation details include:
-
-1. **Preprocessing Components**:
-   - Uses `sklearn.preprocessing.LabelEncoder` for categorical variables
-   - Uses `sklearn.preprocessing.KBinsDiscretizer` with k-means strategy for discretizing continuous variables
-
-2. **Bayesian Network Learning**:
-   - Employs the `BNEstimator` class for structure and parameter learning
-   - Prevents causal edges from target to predictors via a blacklist when the target is provided
-
-3. **Feature Generation**:
-   - For each feature, identifies its parents in the learned network
-   - Computes conditional probabilities based on the node type (discrete or continuous)
-   - Handles edge cases gracefully with fallback mechanisms
-
 ## Example
 
 The following example demonstrates how to use BNFeatureGenerator to enhance a Decision Tree classifier on the banknote authentication dataset:
