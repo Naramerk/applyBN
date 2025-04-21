@@ -6,6 +6,23 @@ from typing import Union, Tuple
 
 
 class CausalFeatureSelector(BaseEstimator, SelectorMixin):
+    """Causal Feature Selector based on information-theoretic causal influence.
+
+    This class implements feature selection by evaluating the causal effect of features
+    on the target variable using entropy-based metrics. Features are selected if they
+    significantly reduce the uncertainty (conditional entropy) of the target when 
+    controlled for other selected features.
+
+    Parameters:
+        n_bins (Union[int, str]): Number of bins for data discretization. 
+            Use "auto" to determine bins via IQR-based heuristic. Defaults to "auto".
+
+    Attributes:
+        n_bins (Union[int, str]): Number of bins used for discretization (set during initialization).
+        support_ (np.ndarray): Boolean mask array indicating selected features. Shape (n_features,).
+        X_ (np.ndarray): Feature matrix from the training data. Shape (n_samples, n_features).
+        y_ (np.ndarray): Target variable from the training data. Shape (n_samples,).
+    """
     def __init__(self, n_bins: Union[int, str] = "auto"):
         """
         Initialize the causal feature selector.

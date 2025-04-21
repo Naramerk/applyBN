@@ -24,11 +24,6 @@ class BNOverSampler(BaseOverSampler):
 
     Attributes:
         data_generator_: Fitted Bayesian Network synthetic data generator instance.
-
-    Example:
-        >>> from applybn.imbalanced.over_sampling.bn_over_sampler import BNOverSampler
-        >>> oversampler = BNOverSampler(class_column='target', strategy='max_class')
-        >>> X_res, y_res = oversampler.fit_resample(X, y)
     """
 
     def __init__(self, class_column=None, strategy='max_class', shuffle=True):
