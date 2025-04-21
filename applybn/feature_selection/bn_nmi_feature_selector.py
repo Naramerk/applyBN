@@ -4,53 +4,51 @@ from sklearn.base import BaseEstimator
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.utils.validation import check_X_y
 from bamt.external.pyitlib.DiscreteRandomVariableUtils import entropy, information_mutual
+from typing import Union, Any
+import pandas as pd
 
 
 class NMIFeatureSelector(BaseEstimator, SelectorMixin):
     """Feature selection based on Normalized Mutual Information (NMI).
 
     This selector performs a two-stage feature selection process:
+
     1. Select features with NMI to the target above a threshold.
+
     2. Remove redundant features based on pairwise NMI between features.
 
-    Parameters
-    ----------
-    threshold : float, optional (default=0.0)
-        The threshold value for the first stage selection. Features with NMI
-        greater than this value are retained after the first stage.
-    n_bins : int, optional (default=10)
-        The number of bins to use for discretizing continuous features.
 
-    Attributes
-    ----------
-    nmi_features_target_ : ndarray of shape (n_features,)
-        The NMI between each feature and the target.
-    selected_features_ : ndarray of shape (n_selected_features,)
-        The indices of the selected features after both stages.
-    selected_mask_ : ndarray of shape (n_features,)
-        Boolean mask indicating selected features.
-    feature_names_in_ : ndarray of shape (n_features,)
-        Names of features seen during fit.
+    Args:
+        threshold (float): The threshold value for the first stage selection. Features with NMI
+            greater than this value are retained after the first stage.
+        n_bins (int): The number of bins to use for discretizing continuous features.
+
+    Attributes:
+        nmi_features_target_ (ndarray): The NMI between each feature and the target.
+        selected_features_ (ndarray): The indices of the selected features after both stages.
+        selected_mask_ (ndarray): Boolean mask indicating selected features.
+        feature_names_in_ (ndarray): Names of features seen during fit.
     """
 
-    def __init__(self, threshold=0.0, n_bins=10):
+    nmi_features_target_: np.ndarray
+    selected_features_: np.ndarray
+    selected_mask_: np.ndarray
+    feature_names_in_: np.ndarray
+
+    def __init__(self, threshold: float = 0.0, n_bins: int = 10) -> None:
+        """Initialize the NMIFeatureSelector."""
         self.threshold = threshold
         self.n_bins = n_bins
 
-    def fit(self, X, y):
+    def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]) -> "NMIFeatureSelector":
         """Fit the feature selector to the data.
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The training input samples.
-        y : array-like of shape (n_samples,)
-            The target values.
+        Args:
+            X (array-like of shape (n_samples, n_features)): The training input samples.
+            y (array-like of shape (n_samples,)): The target values.
 
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
+        Returns:
+            self (NMIFeatureSelector): The fitted feature selector instance.
         """
         
         # Capture feature names BEFORE data conversion
@@ -112,11 +110,23 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
 
         return self
 
-    def _get_support_mask(self):
+    def _get_support_mask(self) -> np.ndarray:
+        """Get the boolean mask indicating which features are selected.
+
+        Returns:
+            ndarray: Boolean array indicating selected features.
+        """
         return self.selected_mask_
 
-    def _discretize_features(self, X):
-        """Discretize continuous features using KBinsDiscretizer."""
+    def _discretize_features(self, X: np.ndarray) -> np.ndarray:
+        """Discretize continuous features using KBinsDiscretizer.
+
+        Args:
+            X (ndarray): Input features.
+
+        Returns:
+            ndarray: Discretized features.
+        """
         X_disc = np.empty_like(X, dtype=np.int32)
         for i in range(X.shape[1]):
             col = X[:, i]
@@ -131,8 +141,15 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
                 X_disc[:, i] = col.astype(np.int32)
         return X_disc
 
-    def _discretize_target(self, y):
-        """Discretize target variable if continuous."""
+    def _discretize_target(self, y: np.ndarray) -> np.ndarray:
+        """Discretize target variable if continuous.
+
+        Args:
+            y (ndarray): Target variable.
+
+        Returns:
+            ndarray: Discretized target variable.
+        """
         unique_vals = np.unique(y)
         if len(unique_vals) > self.n_bins:
             discretizer = KBinsDiscretizer(n_bins=self.n_bins, encode='ordinal', strategy='uniform')
