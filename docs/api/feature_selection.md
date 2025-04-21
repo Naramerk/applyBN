@@ -1,8 +1,8 @@
 # Feature Selection
 
-## BNFeatureSelector
+## NMIFeatureSelector
 
-::: applybn.feature_selection.bn_feature_selector.BNFeatureSelector
+::: applybn.feature_selection.bn_feature_selector.NMIFeatureSelector
 
 ## CausalFeatureSelector
 
