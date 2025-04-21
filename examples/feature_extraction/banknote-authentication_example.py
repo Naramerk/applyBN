@@ -3,10 +3,9 @@ from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report
-from fin import BNFeatureGenerator
+from applybn.feature_extraction import BNFeatureGenerator
 import ssl
 from sklearn.linear_model import LogisticRegression
-# Set SSL context to avoid certificate verification issues
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # Load the banknote-authentication dataset
