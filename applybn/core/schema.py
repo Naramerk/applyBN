@@ -30,6 +30,7 @@ class BNEstimatorParams(TypedDict, total=False):
     partial: Union[False, Literal["parameters", "structure"]]
     learning_params: None | ParamDict
 
+
 # scores for anomaly detection module
 scores = TypeVar("scores", bound=Score)
 bamt_network = TypeVar("bamt_network", bound=BaseNetwork)

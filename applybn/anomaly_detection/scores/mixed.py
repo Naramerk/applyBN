@@ -43,10 +43,10 @@ class ODBPScore(Score):
         ],
         proximity_estimation_method: Literal["LOF", "IF"],
         iqr_sensivity: float = 1.5,
-        agg_funcs: dict =None,
-        verbose: int =1,
-        model_scorer_args:dict=None,
-        additional_scorer_args:dict=None,
+        agg_funcs: dict = None,
+        verbose: int = 1,
+        model_scorer_args: dict = None,
+        additional_scorer_args: dict = None,
     ):
         """
         Initializes the ODBPScore object.
@@ -83,7 +83,9 @@ class ODBPScore(Score):
                     scores=model_scorers, bn=bn, **model_scorer_args
                 )
             else:
-                raise NotImplementedError("Only iqr and cond_ratio mixins are supported.")
+                raise NotImplementedError(
+                    "Only iqr and cond_ratio mixins are supported."
+                )
         else:
             self.model_scorer = self._model_estimation_method[model_estimation_method](
                 bn=bn, **model_scorer_args

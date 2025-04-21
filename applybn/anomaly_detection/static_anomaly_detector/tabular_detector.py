@@ -19,6 +19,7 @@ from applybn.anomaly_detection.anomaly_detection_pipeline import (
     AnomalyDetectionPipeline,
 )
 
+
 class TabularDetector:
     """
     A tabular detector for anomaly detection.
@@ -47,7 +48,7 @@ class TabularDetector:
 
     def __init__(
         self,
-        target_name: None|str=None,
+        target_name: None | str = None,
         score: Literal["mixed", "proximity", "model"] = "mixed",
         additional_score: None | str = "LOF",
         thresholding_strategy: None | str = "best_from_range",
@@ -59,7 +60,7 @@ class TabularDetector:
                 Literal["original_modified", "iqr", "cond_ratio"],
             ]
         ) = None,
-        verbose:int=1,
+        verbose: int = 1,
     ):
         """
         Initializes the TabularDetector object.
@@ -228,8 +229,7 @@ class TabularDetector:
         return scores
 
     @staticmethod
-    def threshold_search_supervised(y: np.ndarray,
-                                    y_pred: np.ndarray):
+    def threshold_search_supervised(y: np.ndarray, y_pred: np.ndarray):
         """
         Searches for the best threshold to maximize the F1 score.
 
@@ -249,7 +249,7 @@ class TabularDetector:
 
         return thresholds[np.argmax(eval_scores)]
 
-    def predict_scores(self, X:pd.DataFrame):
+    def predict_scores(self, X: pd.DataFrame):
         """
         Predicts the anomaly scores for the input data.
 

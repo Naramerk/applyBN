@@ -24,6 +24,7 @@ class AnomalyDetectionPipeline(CorePipeline):
         Returns:
             callable: The wrapped method with the preprocessor step temporarily disabled.
         """
+
         @wraps(method)
         def wrapper(pipeline, *args, **kwargs):
             """
@@ -49,7 +50,7 @@ class AnomalyDetectionPipeline(CorePipeline):
         return wrapper
 
     @_score_context
-    def score(self, X:pd.DataFrame, y=None, sample_weight=None, **params):
+    def score(self, X: pd.DataFrame, y=None, sample_weight=None, **params):
         """
         Computes the score for the given data.
 

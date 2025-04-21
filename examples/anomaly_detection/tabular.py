@@ -11,7 +11,10 @@ Run this script to see how the methods can be chained together for end-to-end an
 
 import pandas as pd
 from sklearn.metrics import classification_report
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
+from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import (
+    TabularDetector,
+)
+
 
 def main():
     # run from applybn root or change path here
@@ -35,6 +38,7 @@ def main():
     print(classification_report(data["y"], preds_iqr))
     print("___")
     print(classification_report(data["y"], preds_IF))
+
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@ factory = EstimatorPipelineFactory(task_type="classification")
 
 estimator_with_default_interface = factory.estimator.__class__
 
+
 class TabularEstimator(estimator_with_default_interface):
     """
     A custom tabular estimator that extends the default estimator interface.
@@ -13,7 +14,7 @@ class TabularEstimator(estimator_with_default_interface):
         scorer: An optional scoring object used to calculate scores for the input data.
     """
 
-    def __init__(self, scorer: scores =None):
+    def __init__(self, scorer: scores = None):
         """
         Initializes the TabularEstimator.
 

@@ -5,12 +5,17 @@ import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerPathCollection
 from sklearn.decomposition import PCA
 
+
 class ResultsDisplay:
     """
     A class to display results of anomaly detection using scatter plots.
     """
 
-    def __init__(self, outlier_scores: pd.DataFrame | np.ndarray, y_true: pd.DataFrame | np.ndarray):
+    def __init__(
+        self,
+        outlier_scores: pd.DataFrame | np.ndarray,
+        y_true: pd.DataFrame | np.ndarray,
+    ):
         """
         Initializes the ResultsDisplay object.
 
@@ -55,8 +60,7 @@ class ResultsDisplay:
         plt.show()
 
     @staticmethod
-    def plot_lof(X: pd.DataFrame | np.ndarray,
-                 negative_factors: np.ndarray):
+    def plot_lof(X: pd.DataFrame | np.ndarray, negative_factors: np.ndarray):
         """
         Plots the Local Outlier Factor (LOF) results using a scatter plot.
 

@@ -104,7 +104,10 @@ class BNBasedScore(Score):
                         classes_ = [int(class_name) for class_name in classes]
                     case "disc":
                         classes_ = np.asarray(
-                            [self.encoding[node_name][class_name] for class_name in classes]
+                            [
+                                self.encoding[node_name][class_name]
+                                for class_name in classes
+                            ]
                         )
                 cond_mean = classes_ @ np.asarray(probs).T
 
@@ -145,11 +148,13 @@ class IQRBasedScore(BNBasedScore):
     A score class that uses the Interquartile Range (IQR) for anomaly detection.
     """
 
-    def __init__(self,
-                 bn: bamt_network,
-                 encoding: dict,
-                 iqr_sensivity: float =1.0,
-                 verbose:int=1):
+    def __init__(
+        self,
+        bn: bamt_network,
+        encoding: dict,
+        iqr_sensivity: float = 1.0,
+        verbose: int = 1,
+    ):
         """
         Initializes the IQRBasedScore object.
 
@@ -163,11 +168,9 @@ class IQRBasedScore(BNBasedScore):
         self.iqr_sensivity = iqr_sensivity
 
     @staticmethod
-    def score_iqr(upper: float,
-                  lower: float,
-                  y: float,
-                  max_distance: float,
-                  min_distance: float):
+    def score_iqr(
+        upper: float, lower: float, y: float, max_distance: float, min_distance: float
+    ):
         """
         Computes the IQR-based score for a given value.
 
@@ -195,7 +198,9 @@ class IQRBasedScore(BNBasedScore):
         elif closest_value == lower:
             ref_distance = min_distance
         else:
-            raise ValueError("Unexpected state: closest_value does not match either upper or lower bound.")
+            raise ValueError(
+                "Unexpected state: closest_value does not match either upper or lower bound."
+            )
 
         return min(1, current_distance / abs(ref_distance))
 
@@ -246,7 +251,7 @@ class CondRatioScore(BNBasedScore):
     A score class that uses conditional probability ratios for anomaly detection.
     """
 
-    def __init__(self, bn: bamt_network, encoding:dict, verbose:int=1):
+    def __init__(self, bn: bamt_network, encoding: dict, verbose: int = 1):
         """
         Initializes the CondRatioScore object.
 
@@ -313,11 +318,9 @@ class CombinedIQRandProbRatioScore(BNBasedScore):
     A score class that combines IQR-based scoring and probability ratio scoring for anomaly detection.
     """
 
-    def __init__(self,
-                 bn: bamt_network,
-                 encoding: dict,
-                 scores: dict,
-                 verbose:int=1):
+    def __init__(
+        self, bn: bamt_network, encoding: dict, scores: dict, verbose: int = 1
+    ):
         """
         Initializes the CombinedIQRandProbRatioScore object.
 

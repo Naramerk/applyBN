@@ -7,7 +7,7 @@ class Score(ABC):
     An abstract base class for implementing scoring mechanisms.
     """
 
-    def __init__(self, verbose:int=1):
+    def __init__(self, verbose: int = 1):
         """
         Initializes the Score object.
 

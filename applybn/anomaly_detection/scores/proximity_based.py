@@ -6,10 +6,9 @@ from sklearn.ensemble import IsolationForest
 import numpy as np
 import pandas as pd
 
+
 class ProximityBasedScore(Score):
-    def __init__(self,
-                 verbose: int,
-                 proximity_steps: int = 5):
+    def __init__(self, verbose: int, proximity_steps: int = 5):
         super().__init__(verbose)
         self.proximity_steps = proximity_steps
 
@@ -70,9 +69,7 @@ class LocalOutlierScore(ProximityBasedScore):
     A class for computing outlier scores using the Local Outlier Factor (LOF) algorithm.
     """
 
-    def __init__(self,
-                 proximity_steps: int=5,
-                 verbose:int=1, **kwargs):
+    def __init__(self, proximity_steps: int = 5, verbose: int = 1, **kwargs):
         """
         Initializes the LocalOutlierScore object.
 
@@ -99,14 +96,13 @@ class LocalOutlierScore(ProximityBasedScore):
         # The higher the value, the more abnormal the data point
         return np.negative(clf.negative_outlier_factor_)
 
+
 class IsolationForestScore(ProximityBasedScore):
     """
     A class for computing outlier scores using the Isolation Forest algorithm.
     """
 
-    def __init__(self,
-                 proximity_steps: int=5,
-                 verbose:int=1, **kwargs):
+    def __init__(self, proximity_steps: int = 5, verbose: int = 1, **kwargs):
         """
         Initializes the IsolationForestScore object.
 
