@@ -1,7 +1,6 @@
 import copy
 import random
-from optparse import Option
-from typing import Optional, Callable
+from typing import Callable
 
 import numpy as np
 import cv2
@@ -33,7 +32,7 @@ class CausalCNNExplainer:
         filter_importances (dict): Importance scores for the filters of each layer.
     """
 
-    def __init__(self, model: nn.Module, device: Optional[torch.device] = None):
+    def __init__(self, model: nn.Module, device: torch.device | None = None):
         """Initializes the CausalCNNExplainer object.
 
         Args:
@@ -93,7 +92,7 @@ class CausalCNNExplainer:
     def collect_data(
         self,
         data_loader: torch.utils.data.DataLoader,
-        frobenius_norm_func: Optional[Callable] = None,
+        frobenius_norm_func: Callable | None = None,
     ):
         """Collects output data for each convolutional layer.
 
