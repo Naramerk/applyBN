@@ -39,7 +39,7 @@ These lambda-features capture complex probabilistic relationships that linear mo
 The following example demonstrates how to use BNFeatureGenerator on the banknote authentication dataset:
 
 ``` py title="examples/feature_extraction/banknote-authentication_example.py"
---8<-- "examples/feature_extraction/banknote-authentication_example.py"
+--8<-- "examples/feature_extraction/banknote_authentication_example.py"
 ```
 
 The BNFeatureGenerator enhances model performance by capturing complex probabilistic relationships in the data, improving the classifier's ability to distinguish between classes, as demonstrated in the example above. 
