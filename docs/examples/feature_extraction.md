@@ -5,29 +5,16 @@ This example demonstrates the `BNFeatureGenerator`'s ability to improve model pe
 ## Step 1: Load and Preprocess Data
 
 ```python
-import pandas as pd
-import numpy as np
-from sklearn.datasets import fetch_openml
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score, f1_score
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.preprocessing import PolynomialFeatures
-import matplotlib.pyplot as plt
-import seaborn as sns
-from fin import BNFeatureGenerator
-import ssl
+# Load the Wilt dataset from local files
+training_data = pd.read_csv('data/feature_extraction/wilt/training.csv')
+testing_data = pd.read_csv('data/feature_extraction/wilt/testing.csv')
 
-# Set SSL context to avoid certificate verification issues
-ssl._create_default_https_context = ssl._create_unverified_context
+# Combine training and testing data for cross-validation
+combined_data = pd.concat([training_data, testing_data], ignore_index=True)
 
-# Load the Wilt dataset
-data = fetch_openml(name='wilt', version=1, as_frame=True)
-X = pd.DataFrame(data.data)
-y = pd.Series(data.target)
+# Separate features and target
+X = combined_data.drop("class", axis=1)  # Assuming 'class' is the target column
+y = combined_data["class"]
 
 # Create preprocessing pipeline
 preprocessor = ColumnTransformer(
@@ -320,7 +307,8 @@ Best model with Bayesian Network features: SVC
   Accuracy: 0.9833 (±0.0016)
   F1 Score: 0.9168 (±0.0124)
 ```
-![Figure_111](https://github.com/user-attachments/assets/cd2004f8-5c25-4ce8-8d06-e5a57ebadd95)
+
+![feature_comparison](https://github.com/user-attachments/assets/feature_comparison.png)
 
 ## Conclusion
 
