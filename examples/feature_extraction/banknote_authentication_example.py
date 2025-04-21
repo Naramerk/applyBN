@@ -3,7 +3,7 @@ from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report
-from applybn.feature_extraction import BNFeatureGenerator
+from from applybn.feature_extraction.bn_feature_extractor import BNFeatureGenerator
 import ssl
 from sklearn.linear_model import LogisticRegression
 ssl._create_default_https_context = ssl._create_unverified_context
