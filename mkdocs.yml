@@ -83,7 +83,7 @@ nav:
           - CNN Filter Importance: api/explainable/cnn_filter_importance.md
       - Data Mining:
         - Feature extraction: api/feature_extraction.md
-        - BN oversampling: api/bn_oversampling.md
+        - BN oversampling: api/oversampling/bn_oversampling.md
       - Outlier detection:
           - api/outlier_detection/outlier_detection.md
           - Tabular outlier detection: api/outlier_detection/tabular_outliers.md
