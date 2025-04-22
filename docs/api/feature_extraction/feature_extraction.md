@@ -1,13 +1,13 @@
-# Feature Extraction
+# Bayesian Network Feature Generation
 
+[User Guide reference](../../user-guide/feature_extraction/feature_extraction.md)
 
-## BNFeatureGenerator
 ::: applybn.feature_extraction.bn_feature_extractor.BNFeatureGenerator
 
-### Example
+# Example
 
 ```python
-from applybn.feature_extraction import BNFeatureGenerator
+from applybn.feature_extraction.bn_feature_extractor import BNFeatureGenerator
 import pandas as pd
 
 data = pd.read_csv('your_data.csv')
