@@ -85,6 +85,11 @@ class TabularDetector:
         self.y_ = None
         self.verbose = verbose
 
+    @property
+    def impacts(self):
+        return {"proximity": self.pipeline_.scorer.proximity_impact,
+                "model": self.pipeline_.scorer.model_impact}
+
     def _is_fitted(self):
         """
         Checks whether the detector is fitted or not.

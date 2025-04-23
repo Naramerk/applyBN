@@ -1,1 +1,0 @@
-from applybn.outlier_detection.tabular.bn_outlier_detector import BNOutlierDetector

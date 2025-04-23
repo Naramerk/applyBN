@@ -6,6 +6,8 @@ because each row has its own anomaly score in this method.
 
 Read more in [User Guide](../../user-guide/anomaly_detection_module/tabular_detection.md).
 
+---
+
 # Detector
 ::: applybn.anomaly_detection.static_anomaly_detector.tabular_detector.TabularDetector
 

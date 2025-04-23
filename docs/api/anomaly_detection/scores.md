@@ -11,8 +11,12 @@ They are a ways to evaluate each row in each subsample.
 
 Read more in [User Guide](../../user-guide/anomaly_detection_module/tabular_detection.md). 
 
+---
+
 # Score
 ::: applybn.anomaly_detection.scores.score.Score
+
+---
 
 # Proximity based scores
 ## Local Outlier Score
@@ -20,6 +24,8 @@ Read more in [User Guide](../../user-guide/anomaly_detection_module/tabular_dete
 
 ## Isolation Forest Score
 ::: applybn.anomaly_detection.scores.proximity_based.IsolationForestScore
+
+---
 
 # Model based scores
 ::: applybn.anomaly_detection.scores.model_based.ModelBasedScore

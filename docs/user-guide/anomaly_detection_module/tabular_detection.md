@@ -11,6 +11,7 @@ from ["Effective Outlier Detection based on Bayesian Network and Proximity"](htt
 mitigation of normality limitations, dealing with mixed data.
 
 The list of changes:
+
 - Added support for mixed data
 - Added several new methods such as IQR, Cond Ratio Probability that based on arbitrary bayesian network.
 
@@ -22,54 +23,7 @@ Please consider this table when choosing appropriate algorithm:
 | Discrete   | `cond_ratio`, `original_modified`                 |
 | Mixed      | `cond_ratio + iqr (default)`, `original_modified` |
 
-## Mathematical Foundation 
-
-### Bayesian (Belief) Networks
-
-**Bayesian Networks** (also known as **Bayes Nets** or **Belief Networks**) are probabilistic graphical models 
-that represent a collection of random variables and their conditional dependencies using a **directed acyclic graph** (DAG).
-In these graphs, each **node** corresponds to a random variable, and each **edge** represents a direct probabilistic dependency.
-
-These networks provide a compact and intuitive way to encode joint probability distributions. 
-Rather than modeling the full joint distribution explicitly, which becomes intractable as the number of variables grows, 
-Bayesian Networks break it down using the **chain rule of probability** and the **conditional independencies** encoded
-in the graph. This makes them particularly well-suited for reasoning under uncertainty, performing inference, 
-and making decisions based on incomplete or noisy data.
-
-At the heart of a Bayesian Network are two components:
-
-1. **Structure** – the graph itself, which defines the dependencies among variables.
-2. **Parameters** – the **conditional probability distributions (CPDs)** associated with each node, given its parents.
-
-While the structure tells us *which variables influence each other*, 
-the parameters quantify *how strong those influences are*. 
-Together, they fully specify the joint distribution over the variables.
-
----
-
-### Learning in Bayesian Networks
-
-When constructing Bayesian Networks from data, there are two fundamental tasks:
-
-- **Structure Learning**: 
-Discovering the optimal graph structure that captures the dependencies among variables. 
-This is often a combinatorially hard problem, especially for large datasets, 
-as it involves searching through the space of all possible DAGs.
-  
-- **Parameter Learning**: 
-Estimating the CPDs for each node given the structure. 
-If the structure is known and data is complete, this step is relatively straightforward and 
-can be done using maximum likelihood estimation or Bayesian estimation.
-
-Learning both structure and parameters from data allows Bayesian Networks to be applied in real-world domains
-where expert-designed structures are not available. 
-This makes them especially valuable in areas such as bioinformatics, medical diagnosis, and automated decision systems.
-
-!!! note
-
-    By default `bamt` (and `applybn`) will use K2 as structure scorer and maximum likelihood as parameters scorer.
-
----
+## Mathematical Foundation
 
 ### Original Method 
 
@@ -96,11 +50,7 @@ Where \( \text{Pa}_i(\mathbf{x}) \) are the values of \( \text{Pa}(X_i) \) in th
 
 ##### Scoring Rows
 
-They compute an **anomaly score** as the **negative log-likelihood**:
-
-\[
-S_{\text{BN}}(\mathbf{x}) = -\sum_{i=1}^{n} \log P(x_i \mid \text{Pa}_i(\mathbf{x}))
-\]
+They compute an **anomaly score** as follows.
 
 If the CPDs are Gaussian:
 
@@ -138,6 +88,7 @@ P(X) = \prod_{i=1}^{n} P(X_i \mid \text{Pa}(X_i))
 \]
 
 Where:
+
 - \( \text{Pa}(X_i) \) denotes the parents of node \( X_i \) in the DAG.
 - Each \( P(X_i \mid \text{Pa}(X_i)) \) is a **Conditional Probability Distribution (CPD)**.
 
@@ -250,101 +201,6 @@ s_i^{(j)} =
 \]
 
 This score measures how **surprising** a value is given its context in the network — higher values imply **less expected** behavior conditionally.
-
----
-
-
-## Usage
-
-### With target variable
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector(target_name="y")
-detector.fit(data)
-
-detector.get_info(as_df=False)
-
-print(detector.predict(data))
-```
-
-### Without target
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector()
-detector.fit(data)
-
-detector.get_info(as_df=False)
-
-# print(detector.predict(data)) # raise an error
-print(detector.predict_scores(data))
-```
-### Plotting result
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector(target_name="y")
-detector.fit(data)
-
-# detector.get_info(as_df=False)
-
-preds = detector.predict(data)
-detector.plot_result(preds) # scores or labels
-```
-
-### Changing methods
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector(target_name="y", model_estimation_method="iqr") # works because ecoli cont (as bams log says as well)
-detector.fit(data)
-preds = detector.predict_scores(data)
-print(preds[:5])
-```
-
-#### Wrong usage
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector(target_name="y", model_estimation_method="cond_ratio")
-detector.fit(data)
-preds = detector.predict_scores(data)  # error
-```
-
-### Original modified
-```python
-import pandas as pd
-from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
-
-# run from applybn root or change path here
-data = pd.read_csv("applybn/anomaly_detection/data/tabular/ecoli.csv")
-
-detector = TabularDetector(target_name="y", 
-                           model_estimation_method="original_modified")
-detector.fit(data)
-preds = detector.predict_scores(data)
-```
 
 ## Example
 

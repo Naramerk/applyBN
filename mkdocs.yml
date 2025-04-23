@@ -61,7 +61,7 @@ theme:
 
 nav:
   - Getting Started:
-    - index.md
+    - getting-started/intro_bn.md
     - getting-started/installation.md
   - User Guide:
     - index.md
@@ -95,7 +95,7 @@ nav:
           - Scores: api/anomaly_detection/scores.md
       - Synthetic data generation: api/synthetic_data_generation.md
   - Examples:
-      - Tabular Data: examples/tabular_data.md
+      - Tabular Data: examples/tabular_anomaly_detection.md
       - Time Series Data: examples/time_series_data.md
       - Synthetic Data Generation: examples/synthetic_data_generation.md
       - Custom Estimators: examples/custom_estimators.md
