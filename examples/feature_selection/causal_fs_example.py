@@ -8,10 +8,7 @@ from applybn.feature_selection.ce_feature_selector import CausalFeatureSelector
 
 # Generate synthetic dataset with 1000 features (50 informative, 950 noise)
 X, y = make_classification(
-    n_samples=2000,
-    n_features=50,
-    n_informative=5,
-    n_redundant=10
+    n_samples=2000, n_features=50, n_informative=5, n_redundant=10
 )
 
 # Split into train/test sets

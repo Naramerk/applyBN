@@ -10,11 +10,11 @@ class CausalFeatureSelector(BaseEstimator, SelectorMixin):
 
     This class implements feature selection by evaluating the causal effect of features
     on the target variable using entropy-based metrics. Features are selected if they
-    significantly reduce the uncertainty (conditional entropy) of the target when 
+    significantly reduce the uncertainty (conditional entropy) of the target when
     controlled for other selected features.
 
     Parameters:
-        n_bins (Union[int, str]): Number of bins for data discretization. 
+        n_bins (Union[int, str]): Number of bins for data discretization.
             Use "auto" to determine bins via IQR-based heuristic. Defaults to "auto".
 
     Attributes:
@@ -23,6 +23,7 @@ class CausalFeatureSelector(BaseEstimator, SelectorMixin):
         X_ (np.ndarray): Feature matrix from the training data. Shape (n_samples, n_features).
         y_ (np.ndarray): Target variable from the training data. Shape (n_samples,).
     """
+
     def __init__(self, n_bins: Union[int, str] = "auto"):
         """
         Initialize the causal feature selector.
