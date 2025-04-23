@@ -65,7 +65,6 @@ nav:
     - getting-started/installation.md
   - User Guide:
     - index.md
-
     - Causal explanation:
       - Concept Explainer: user-guide/explainable_module/concept_explainer.md
       - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
@@ -78,6 +77,9 @@ nav:
     - Feature selection:
       - NMI-based Feature selection: user-guide/feature_selection/nmi_feature_selection.md
       - Causal-based Feature selection: user-guide/feature_selection/causal_feature_selection.md
+    - Feature extraction:
+        - BN-based Feature extraction: user-guide/feature_extraction/feature_extraction.md
+
   
   - API Reference:
       - Core:
@@ -94,14 +96,13 @@ nav:
           - NMI-based Feature selection: api/feature_selection/nmi_feature_selection.md
           - Causal-based Feature selection: api/feature_selection/causal_feature_selection.md
       - Feature extraction:
-          - BN-based feature extraction: api/feature_extraction.md
+          - BN-based feature extraction: api/feature_extraction/feature_extraction.md
       - Oversampling:
           - BN-based oversampling: api/oversampling/bn_oversampling.md
       - Outlier detection:
           - Tabular outlier detection: api/anomaly_detection/tabular_outliers.md
           - Time series outlier detection: api/anomaly_detection/ts_outliers.md
           - Scores: api/anomaly_detection/scores.md
-      - Synthetic data generation: api/synthetic_data_generation.md
 
   - Examples:
       - Tabular Data: examples/tabular_anomaly_detection.md
@@ -110,6 +111,7 @@ nav:
       - Robustness Analysis for Causal Feature Selection: examples/causal_feature_selection.md
       - BN-based oversampling vs SMOTE: examples/bn_oversampling.md
       - Custom Estimators: examples/custom_estimators.md
+      - BN-based vs Polynomial & Interaction Features: examples/feature_extraction.md
 
   - Development and Contribution:
       - development/contributing.md
