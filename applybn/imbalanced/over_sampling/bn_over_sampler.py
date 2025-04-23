@@ -24,11 +24,6 @@ class BNOverSampler(BaseOverSampler):
 
     Attributes:
         data_generator_: Fitted Bayesian Network synthetic data generator instance.
-
-    Example:
-        >>> from applybn.imbalanced.over_sampling.bn_over_sampler import BNOverSampler
-        >>> oversampler = BNOverSampler(class_column='target', strategy='max_class')
-        >>> X_res, y_res = oversampler.fit_resample(X, y)
     """
 
     def __init__(self, class_column=None, strategy='max_class', shuffle=True):
@@ -139,10 +134,17 @@ class BNOverSampler(BaseOverSampler):
         data = X_df.assign(**{self.class_column: y_series})
         
         # Preprocess data
+        n_bins=5
+        feature_types = pp = Preprocessor([]).get_nodes_types(data)
+        for k in feature_types:
+            if (feature_types[k] != 'cont') & (data[k].nunique()>n_bins):
+                n_bins = data[k].nunique()
         encoder = LabelEncoder()
-        discretizer = KBinsDiscretizer(n_bins=10, encode='ordinal', strategy='quantile')
+        discretizer = KBinsDiscretizer(n_bins=n_bins, encode='ordinal', strategy='quantile')
         pp = Preprocessor([("encoder", encoder), ("discretizer", discretizer)])
         preprocessed_data, _ = pp.apply(data)
+        
+        
         # Fit Bayesian Network
         self.data_generator_.use_mixture = True
         fit_package = (preprocessed_data, pp.info, data)
