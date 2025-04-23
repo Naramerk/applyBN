@@ -3,7 +3,10 @@ from sklearn.feature_selection import SelectorMixin
 from sklearn.base import BaseEstimator
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.utils.validation import check_X_y
-from bamt.external.pyitlib.DiscreteRandomVariableUtils import entropy, information_mutual
+from bamt.external.pyitlib.DiscreteRandomVariableUtils import (
+    entropy,
+    information_mutual,
+)
 from typing import Union, Any
 import pandas as pd
 
@@ -40,7 +43,9 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
         self.threshold = threshold
         self.n_bins = n_bins
 
-    def fit(self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]) -> "NMIFeatureSelector":
+    def fit(
+        self, X: Union[np.ndarray, pd.DataFrame], y: Union[np.ndarray, pd.Series]
+    ) -> "NMIFeatureSelector":
         """Fit the feature selector to the data.
 
         Args:
@@ -50,13 +55,13 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
         Returns:
             self (NMIFeatureSelector): The fitted feature selector instance.
         """
-        
+
         # Capture feature names BEFORE data conversion
-        if hasattr(X, 'columns'):
+        if hasattr(X, "columns"):
             self.feature_names_in_ = X.columns.to_numpy()
         else:
             self.feature_names_in_ = np.arange(X.shape[1])
-        
+
         # Convert to numpy arrays after capturing names
         X, y = check_X_y(X, y, dtype=None, force_all_finite=True)
 
@@ -65,7 +70,9 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
         y_disc = self._discretize_target(y.reshape(-1, 1)).flatten()
 
         # Compute NMI between each feature and target
-        mi = np.array([information_mutual(X_disc[:, i], y_disc) for i in range(X_disc.shape[1])])
+        mi = np.array(
+            [information_mutual(X_disc[:, i], y_disc) for i in range(X_disc.shape[1])]
+        )
         h_y = entropy(y_disc)
         h_features = np.array([entropy(X_disc[:, i]) for i in range(X_disc.shape[1])])
         self.nmi_features_target_ = np.zeros_like(mi)
@@ -133,8 +140,14 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
             unique_vals = np.unique(col)
             if len(unique_vals) > self.n_bins:
                 # Discretize continuous feature
-                discretizer = KBinsDiscretizer(n_bins=self.n_bins, encode='ordinal', strategy='uniform')
-                discretized_col = discretizer.fit_transform(col.reshape(-1, 1)).flatten().astype(np.int32)
+                discretizer = KBinsDiscretizer(
+                    n_bins=self.n_bins, encode="ordinal", strategy="uniform"
+                )
+                discretized_col = (
+                    discretizer.fit_transform(col.reshape(-1, 1))
+                    .flatten()
+                    .astype(np.int32)
+                )
                 X_disc[:, i] = discretized_col
             else:
                 # Treat as discrete (convert to integers for pyitlib)
@@ -152,7 +165,9 @@ class NMIFeatureSelector(BaseEstimator, SelectorMixin):
         """
         unique_vals = np.unique(y)
         if len(unique_vals) > self.n_bins:
-            discretizer = KBinsDiscretizer(n_bins=self.n_bins, encode='ordinal', strategy='uniform')
+            discretizer = KBinsDiscretizer(
+                n_bins=self.n_bins, encode="ordinal", strategy="uniform"
+            )
             y_disc = discretizer.fit_transform(y).flatten().astype(np.int32)
         else:
             y_disc = y.astype(np.int32).flatten()
