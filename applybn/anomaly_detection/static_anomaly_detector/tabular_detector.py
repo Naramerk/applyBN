@@ -87,8 +87,10 @@ class TabularDetector:
 
     @property
     def impacts(self):
-        return {"proximity": self.pipeline_.scorer.proximity_impact,
-                "model": self.pipeline_.scorer.model_impact}
+        return {
+            "proximity": self.pipeline_.scorer.proximity_impact,
+            "model": self.pipeline_.scorer.model_impact,
+        }
 
     def _is_fitted(self):
         """
