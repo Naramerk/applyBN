@@ -130,8 +130,8 @@ For a given row \( j \):
 
 - IQR:
   \(
-  \alpha \text{IQR}_i^{(j)} = Q_3 - Q_1
-  \), where alpha is hyperparameter
+  \text{IQR}_i^{(j)} = \alpha \cdot (Q_3 - Q_1)
+  \), where $\alpha$ is hyperparameter
 
 - Bounds:
   \(

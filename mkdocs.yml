@@ -61,10 +61,10 @@ theme:
 
 nav:
   - Getting Started:
+    - index.md
     - getting-started/intro_bn.md
     - getting-started/installation.md
   - User Guide:
-    - index.md
     - Causal explanation:
       - Concept Explainer: user-guide/explainable_module/concept_explainer.md
       - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
@@ -105,8 +105,8 @@ nav:
           - Scores: api/anomaly_detection/scores.md
 
   - Examples:
-      - Tabular Data: examples/tabular_anomaly_detection.md
-      - Time Series Data: examples/time_series_data.md
+      - Tabular Anomaly Detection: examples/tabular_anomaly_detection.md
+      - Time Series Anomaly Detection: examples/time_series_data.md
       - Feature Selection with NMIFeatureSelector: examples/nmi_feature_selection.md
       - Robustness Analysis for Causal Feature Selection: examples/causal_feature_selection.md
       - BN-based oversampling vs SMOTE: examples/bn_oversampling.md
