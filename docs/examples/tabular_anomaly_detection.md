@@ -1,4 +1,4 @@
-# Tabular Data anomaly detection
+# Tabular anomaly detection
 
 This example demonstrates how different preprocessing techniques affect
 the performance of various outlier detection algorithms, with evaluation
