@@ -6,23 +6,13 @@ The [`BNFeatureGenerator`](../../api/feature_extraction/feature_extraction.md) i
 
 ## Mathematical Foundation
 
-### Bayesian Network Structure Learning
+### Bayesian Network Construction
 
 The algorithm consists of several key steps:
 
-1. **Data Pre-processing**: The input data is prepared by:
-      - Encoding categorical columns using a LabelEncoder
-      - Discretizing continuous columns using KBinsDiscretizer with k-means strategy
-      - Optionally incorporating a target variable as a node in the network
+1. **Structure Learning**: A directed acyclic graph (DAG) is learned to represent probabilistic relationships between variables
 
-2. **Structure Learning**: A directed acyclic graph (DAG) is learned to represent probabilistic relationships between variables:
-      - Nodes represent features in the dataset
-      - Edges represent conditional dependencies
-      - When a target variable is provided, a blacklist prevents edges from the target to predictors
-
-3. **Parameter Learning**: The module fits conditional probability distributions for each node:
-      - Discrete nodes: Categorical distributions as $P(X|Pa(X))$
-      - Continuous nodes: Gaussian distributions conditioned on parent values
+2. **Parameter Learning**: The module fits conditional probability distributions for each node
 
 ### Feature Generation through Probabilistic Inference
 
