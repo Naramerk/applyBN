@@ -3,15 +3,18 @@ import pandas as pd
 import numpy as np
 from applybn.feature_extraction import BNFeatureGenerator
 
+
 class TestBNFeatureGenerator:
 
     @pytest.fixture
     def sample_data(self):
-        data = pd.DataFrame({
-            'A': np.array([1, 2, 3, 4, 5]),
-            'B': np.array(['x', 'y', 'x', 'y', 'x']),
-            'C': np.array([1.1, 2.2, 3.3, 4.4, 5.5])
-        })
+        data = pd.DataFrame(
+            {
+                "A": np.array([1, 2, 3, 4, 5]),
+                "B": np.array(["x", "y", "x", "y", "x"]),
+                "C": np.array([1.1, 2.2, 3.3, 4.4, 5.5]),
+            }
+        )
 
         return data
 
@@ -31,10 +34,10 @@ class TestBNFeatureGenerator:
         assert setup_generator.bn.nodes is not None
 
     def test_fit_with_target(self, setup_generator, sample_data):
-        target = sample_data['B']
-        target.name = 'B'
+        target = sample_data["B"]
+        target.name = "B"
 
-        setup_generator.fit(sample_data.drop('B', axis=1), target)
+        setup_generator.fit(sample_data.drop("B", axis=1), target)
 
         assert setup_generator.bn is not None
 
@@ -50,6 +53,6 @@ class TestBNFeatureGenerator:
         assert isinstance(transformed_data, pd.DataFrame)
 
         assert len(transformed_data.columns) == len(sample_data.columns)
-        assert all(['lambda_' in col for col in transformed_data.columns])
+        assert all(["lambda_" in col for col in transformed_data.columns])
 
         assert transformed_data.map(np.isreal).all().all()

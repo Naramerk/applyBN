@@ -7,6 +7,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import numpy as np
 from scipy.stats import norm
 from applybn.core.estimators.base_estimator import BNEstimator
+
+
 class BNFeatureGenerator(BaseEstimator, TransformerMixin):
     """
     Generates features based on a Bayesian Network (BN).
@@ -38,12 +40,11 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
 
         encoder = preprocessing.LabelEncoder()
         discretizer = preprocessing.KBinsDiscretizer(
-            n_bins = 5,
-            encode = 'ordinal',
-            strategy = 'kmeans',
-            subsample = None
+            n_bins=5, encode="ordinal", strategy="kmeans", subsample=None
         )
-        preprocessor = pp.Preprocessor([('encoder', encoder), ('discretizer', discretizer)])
+        preprocessor = pp.Preprocessor(
+            [("encoder", encoder), ("discretizer", discretizer)]
+        )
         target_name = None
         if y is not None:
             target_name = y.name
@@ -58,9 +59,11 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
         params = {}
         if target_name:
             bl = self.create_black_list(X, target_name)  # Edges to avoid
-            params = {'bl_add': bl}
-        learning_params = {'params': params}
-        bn_estimator = BNEstimator(use_mixture=False, has_logit=True, learning_params=learning_params)
+            params = {"bl_add": bl}
+        learning_params = {"params": params}
+        bn_estimator = BNEstimator(
+            use_mixture=False, has_logit=True, learning_params=learning_params
+        )
         L = (discretized_data, info, clean_data)
         self.bn = bn_estimator.fit(L)
         self.bn = bn_estimator.bn_
@@ -100,21 +103,23 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
 
         results = []
         X_nodes = X.columns
-        target_name = ({node.name for node in self.bn.nodes}-set(X_nodes))
+        target_name = {node.name for node in self.bn.nodes} - set(X_nodes)
         if target_name:
             target_name = target_name.pop()
 
         # Process each feature (column) in the row (excluding target) using the BN
         for _, row in X.iterrows():
-            row_probs = [self.process_feature(feat, row, X, fill_na) for feat in X_nodes]
+            row_probs = [
+                self.process_feature(feat, row, X, fill_na) for feat in X_nodes
+            ]
             results.append(row_probs)
 
-        result = pd.DataFrame(results, columns=['lambda_' + c for c in X_nodes])
+        result = pd.DataFrame(results, columns=["lambda_" + c for c in X_nodes])
 
         # Process target
         target_predictions = self._process_target(target_name, X)
         if target_predictions is not None:
-            result['lambda_' + target_name] = target_predictions
+            result["lambda_" + target_name] = target_predictions
 
         return result
 
@@ -122,12 +127,15 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
         if not y:
             return []
         target_node = y
-        black_list = [(target_node, (col)) for col in X.columns.to_list() if col != target_node]
+        black_list = [
+            (target_node, (col)) for col in X.columns.to_list() if col != target_node
+        ]
 
         return black_list
 
-    def process_feature(self, feature: str, row: pd.Series, X: pd.DataFrame, fill_na: bool = True):
-
+    def process_feature(
+        self, feature: str, row: pd.Series, X: pd.DataFrame, fill_na: bool = True
+    ):
         """
         Processes a single feature (node) in the Bayesian network for a given row of data.
 
@@ -154,7 +162,7 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
             pvals[p] = norm_val
             pvals_disc.append(norm_val)
         # Process discrete nodes
-        if node.type == 'Discrete' or 'logit' in str(node.type).lower():
+        if node.type == "Discrete" or "logit" in str(node.type).lower():
             vals = X[node.name].value_counts(normalize=True).sort_index()
             vals = [str(i) for i in vals.index.to_list()]
             return self._process_discrete_node(feature, row, pvals, vals, fill_na)
@@ -181,7 +189,9 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
 
         obs_value = str(row[feature])
         if fill_na:
-            imputed_value = pd.Series(vals).value_counts(normalize=True).get(obs_value, 0.0)
+            imputed_value = (
+                pd.Series(vals).value_counts(normalize=True).get(obs_value, 0.0)
+            )
         else:
             imputed_value = np.nan
         try:
@@ -189,7 +199,12 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
             idx = dist[1].index(obs_value)
             return dist[0][idx]
         except:
-            logging.exception("Distribution not found for node %s and value %s; setting to %s", feature, str(obs_value), str(imputed_value))
+            logging.exception(
+                "Distribution not found for node %s and value %s; setting to %s",
+                feature,
+                str(obs_value),
+                str(imputed_value),
+            )
             return imputed_value
 
     def _process_non_discrete_node(self, feature, row, pvals, vals, fill_na):
@@ -207,7 +222,11 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
         """
         obs_value = row[feature]
         if fill_na:
-            imputed_value = (pd.Series(vals) <= obs_value).mean() if isinstance(vals, list) else (vals <= obs_value).mean()
+            imputed_value = (
+                (pd.Series(vals) <= obs_value).mean()
+                if isinstance(vals, list)
+                else (vals <= obs_value).mean()
+            )
         else:
             imputed_value = np.nan
         try:
@@ -217,9 +236,14 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
                 return imputed_value
             sigma = variance
             prob = norm.cdf(obs_value, loc=mean, scale=sigma)
-            if np.isnan(prob): # if std is 0
+            if np.isnan(prob):  # if std is 0
                 return imputed_value
             return prob
         except:
-            logging.exception("Distribution not found for node %s and value %s; setting to %s", feature, str(obs_value), str(imputed_value))
+            logging.exception(
+                "Distribution not found for node %s and value %s; setting to %s",
+                feature,
+                str(obs_value),
+                str(imputed_value),
+            )
             return imputed_value

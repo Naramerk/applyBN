@@ -15,30 +15,39 @@ offering interpretability that aligns with human-understandable concepts.
 The module uses a two-stage approach to concept discovery:
 
 1. **Clustering-based Concept Discovery**: The data space is partitioned using KMeans clustering:
-   $$C_i = \{x_j \in D \mid \arg\min_k \|x_j - \mu_k\|^2 = i\}$$
-   where $C_i$ represents cluster $i$, $D$ is the discovery dataset, and $\mu_k$ are cluster centroids.
 
-2. **Discriminative Concept Validation**: Each cluster is validated by training a linear SVM:
-   $$S_i(x) = \text{sign}(w_i^T x + b_i)$$
+   \( C_i = \{x_j \in D \mid \arg\min_k \|x_j - \mu_k\|^2 = i\} \)
+
+   where:
+
+   - $C_i$ represents cluster $i$, 
+   - $D$ is the discovery dataset,
+   - $\mu_k$ are cluster centroids.
+
+&nbsp;2. **Discriminative Concept Validation**: Each cluster is validated by training a linear SVM:
+
+   \( S_i(x) = \text{sign}(w_i^T x + b_i) \)
+
    A cluster is considered a valid concept if it can be discriminated from the natural dataset with AUC > threshold.
 
 ### Concept Space Representation
 The feature space is transformed into a concept space:
-$$A(x) = [A_1(x), A_2(x), ..., A_m(x)]$$
+\( A(x) = [A_1(x), A_2(x), ..., A_m(x)] \)
 where $A_i(x) = 1$ if $x$ belongs to concept $i$, and 0 otherwise.
 
 ### Causal Effect Estimation
 For a binary outcome $L_f$, the causal effect of concept $A_i$ is estimated using:
-$$\tau_i = \mathbb{E}[L_f \mid do(A_i = 1)] - \mathbb{E}[L_f \mid do(A_i = 0)]$$
+\(\tau_i = \mathbb{E}[L_f \mid do(A_i = 1)] - \mathbb{E}[L_f \mid do(A_i = 0)]\)
 
 For continuous outcomes like model confidence, the Double Machine Learning framework is used:
-$$\tau_i(x) = \mathbb{E}[Y \mid do(A_i = 1), X = x] - \mathbb{E}[Y \mid do(A_i = 0), X = x]$$
+\(\tau_i(x) = \mathbb{E}[Y \mid do(A_i = 1), X = x] - \mathbb{E}[Y \mid do(A_i = 0), X = x]\)
 
 where $Y$ is the outcome of interest (e.g., model confidence) and $X$ are other concepts acting as controls.
 
 ## Applications
 
 This approach offers several advantages:
+
 1. **Interpretability**: Concepts correspond to human-understandable patterns in data
 2. **Causal Understanding**: Estimates of causal effects rather than correlations
 3. **Diagnostic Power**: Identifies which concepts causally impact model behavior
