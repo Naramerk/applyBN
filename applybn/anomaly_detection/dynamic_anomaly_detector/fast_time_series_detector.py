@@ -5,6 +5,9 @@ from jpype.types import *
 import pandas as pd
 import os
 import shutil
+
+from sklearn.exceptions import NotFittedError
+
 from applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter import TemporalDBNTransformer
 
 if not shutil.which("java"):
@@ -22,14 +25,13 @@ class FastTimeSeriesDetector:
     def __init__(self,
                  abs_threshold: float = -4.5,
                  rel_threshold: float = 0.8,
-                 num_parents: int = None,
+                 num_parents: int = 3,
                  artificial_slicing: bool = False,
                  artificial_slicing_params: dict = None,
                  scoring_function: str = 'll',
                  markov_lag: int = 1,
                  non_stationary: bool = False,
-                 parameters: bool = True,
-                 intra_in: int = None):
+                 parameters: bool = True):
         """
         Initializes the FastTimeSeriesDetector.
 
@@ -43,20 +45,27 @@ class FastTimeSeriesDetector:
             markov_lag: The Markov lag (time distance) for DBN learning.
             non_stationary: Learn separate models for each transition instead of one shared model.
             parameters: Whether to output DBN parameters.
-            intra_in: In-degree limit for intra-slice connections.
         """
         self.args = [
             "-p", str(num_parents),
             "-s", scoring_function,
-            "-m", markov_lag,
-            "-ns", non_stationary,
-            "--intra-in", intra_in,
+            "-m", str(markov_lag),
+            "-ns", str(non_stationary),
             "-pm" if parameters else ""
         ]
+        base = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+        module_path = os.path.join(base, "dbnod_modified.jar")
+
+        if not jpype.isJVMStarted():
+            jpype.startJVM(classpath=[module_path, ])
+
         self.abs_threshold = abs_threshold
         self.rel_threshold = rel_threshold
         self.artificial_slicing = artificial_slicing
         self.artificial_slicing_params = artificial_slicing_params
+
+    def _is_fitted(self):
+        return True if "scores_" in self.__dict__ else False
 
     @staticmethod
     def _validate_data(X):
@@ -102,6 +111,9 @@ class FastTimeSeriesDetector:
         Returns:
             np.ndarray: Raw scores.
         """
+        if not self._is_fitted():
+            raise NotFittedError("DBN model has not been fitted.")
+
         return self.decision_function(X)
 
     def fit_predict(self, X: pd.DataFrame):
@@ -118,8 +130,8 @@ class FastTimeSeriesDetector:
         thresholded = np.where((self.scores_ < self.abs_threshold), 1, 0)
 
         # Aggregate per-sample anomaly flags and compare against relative threshold
-        anom_fractions = thresholded.mean(axis=0)
-        return np.where(anom_fractions > self.rel_threshold, 1, 0)
+        self.anom_fractions_ = thresholded.mean(axis=0)
+        return np.where(self.anom_fractions_ > self.rel_threshold, 1, 0)
 
     def decision_function(self, X: pd.DataFrame):
         """
@@ -131,11 +143,6 @@ class FastTimeSeriesDetector:
         Returns:
             np.ndarray: 2D array of log-likelihood scores from the Java model.
         """
-        base = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-        module_path = os.path.join(base, "dbnod_modified.jar")
-
-        # Start JVM and load Java class
-        jpype.startJVM(classpath=[module_path,])
         from com.github.tDBN.cli import LearnFromFile
 
         # Write data to disk and call Java scoring
@@ -151,5 +158,5 @@ class FastTimeSeriesDetector:
             py_2d_array.append(list(scores[i]))
         os.remove("temp.csv")
 
-        jpype.shutdownJVM()
-        return np.asarray(py_2d_array)
+        scores = np.asarray(py_2d_array)
+        return scores

@@ -70,8 +70,9 @@ nav:
       - Interventional Explainer: user-guide/explainable_module/interventional_analysis.md
       - CNN Filter Analysis: user-guide/explainable_module/cnn_filter_analysis.md
     - Anomaly Detection:
-      - Tabular Data: user-guide/anomaly_detection_module/tabular_detection.md
-      - Time-Series Data: user-guide/anomaly_detection_module/time_series_detection.md
+      - Tabular Anomaly Detection: user-guide/anomaly_detection_module/tabular_detection.md
+      - Time-Series Anomaly Detection: user-guide/anomaly_detection_module/time_series_detection.md
+      - Data Formatter for TS Anomaly Detection: user-guide/anomaly_detection_module/tDBN_data_formatter.md
     - Oversampling:
       - BN-based Oversampling: user-guide/oversampling_module/bn_oversampling.md
     - Feature selection:
@@ -100,13 +101,13 @@ nav:
       - Oversampling:
           - BN-based oversampling: api/oversampling/bn_oversampling.md
       - Outlier detection:
-          - Tabular outlier detection: api/anomaly_detection/tabular_outliers.md
-          - Time series outlier detection: api/anomaly_detection/ts_outliers.md
+          - Tabular outlier detection: api/anomaly_detection/tabular_anomaly_detector.md
+          - Time series outlier detection: api/anomaly_detection/ts_anomaly_detection.md
           - Scores: api/anomaly_detection/scores.md
 
   - Examples:
       - Tabular Anomaly Detection: examples/tabular_anomaly_detection.md
-      - Time Series Anomaly Detection: examples/time_series_data.md
+      - Time-Series Anomaly Detection: examples/time_series_anomaly_detection.md
       - Feature Selection with NMIFeatureSelector: examples/nmi_feature_selection.md
       - Robustness Analysis for Causal Feature Selection: examples/causal_feature_selection.md
       - BN-based oversampling vs SMOTE: examples/bn_oversampling.md

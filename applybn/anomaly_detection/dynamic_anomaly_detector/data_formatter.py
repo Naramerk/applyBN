@@ -22,9 +22,9 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         2    12
 
     With window=2, the output will be:
-        f1__0  f2__0  f1__1  f2__1
-        0      10     1      11
-        1      11     2      12
+        subject_id f1__0  f2__0  f1__1  f2__1
+            0        0      10     1      11
+            1        1      11     2      12
 
     """
     def __init__(self, window: int = 100, include_label: bool = True):
@@ -73,8 +73,8 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         for i, window_arr in enumerate(sliding_window_view(values, window_shape=(self.window, values.shape[1]))):
             window_flat = window_arr[0]
             col_names = [f"{col}__{i}" for col in X.columns]
-            part_df = pd.DataFrame([window_flat], columns=col_names)
+            part_df = pd.DataFrame(window_flat, columns=col_names)
             dfs.append(part_df)
 
-        final_df = pd.concat(dfs, axis=0).reset_index(drop=True)
+        final_df = pd.concat(dfs, axis=1).reset_index(names=["subject_id"])
         return final_df
