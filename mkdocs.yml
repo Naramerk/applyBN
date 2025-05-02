@@ -104,6 +104,7 @@ nav:
           - Tabular outlier detection: api/anomaly_detection/tabular_anomaly_detector.md
           - Time series outlier detection: api/anomaly_detection/ts_anomaly_detection.md
           - Scores: api/anomaly_detection/scores.md
+          - Data transformers: api/anomaly_detection/tDBN_data_formatter.md
 
   - Examples:
       - Tabular Anomaly Detection: examples/tabular_anomaly_detection.md

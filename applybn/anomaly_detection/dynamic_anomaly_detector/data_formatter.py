@@ -1,7 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
+import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
-from typing import Optional
+from typing import Optional, Literal
 
 class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
     """
@@ -9,25 +10,31 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
     for use with dynamic Bayesian networks (DBNs) or other time-dependent models.
 
     This transformer assumes that:
+
     - The input data has already been discretized (e.g., using KBinsDiscretizer).
     - Each row represents a time step for a given subject or unit.
     - The data is ordered correctly in time.
 
     Example:
-    --------
-    For input data:
-        f1   f2
-        0    10
-        1    11
-        2    12
 
-    With window=2, the output will be:
-        subject_id f1__0  f2__0  f1__1  f2__1
-            0        0      10     1      11
-            1        1      11     2      12
+        For input data:
+            f1   f2
+            0    10
+            1    11
+            2    12
+
+        With window=2, the output will be:
+            subject_id f1__0  f2__0  f1__1  f2__1
+                0        0      10     1      11
+                1        1      11     2      12
 
     """
-    def __init__(self, window: int = 100, include_label: bool = True):
+    def __init__(self,
+                 window: int = 100,
+                 include_label: bool = True,
+                 stride: int = 1,
+                 gathering_strategy: None | Literal["any"] = "any",):
+
         """
         Initialize the transformer.
 
@@ -37,6 +44,8 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         """
         self.window = window
         self.include_label = include_label
+        self.gathering_strategy = gathering_strategy
+        self.stride = stride
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -46,17 +55,18 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
         """
-        Transforms the input DataFrame into a windowed representation.
+        Transforms the input DataFrame into a windowed representation with an optional stride.
 
         Args:
             X: Input features. Each row is a time step.
             y: Labels corresponding to each row of X (e.g., anomaly labels). Must be the same length as X.
 
         Returns:
-            pd.DataFrame A DataFrame where each row is a flattened sliding window of the input.
+            A DataFrame where each row is a flattened sliding window of the input.
         """
         if not isinstance(X, pd.DataFrame):
             raise ValueError("Input X must be a pandas DataFrame.")
+
         if self.include_label:
             if y is None:
                 raise ValueError("Labels must be provided when include_label=True.")
@@ -66,15 +76,48 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
             X["anomaly"] = y.values
 
         values = X.values
-        if len(values) < self.window:
+        n_rows, n_features = values.shape
+        if n_rows < self.window:
             raise ValueError(f"Input data must have at least {self.window} rows.")
 
+        num_windows = (n_rows - self.window) // self.stride + 1
+
         dfs = []
-        for i, window_arr in enumerate(sliding_window_view(values, window_shape=(self.window, values.shape[1]))):
-            window_flat = window_arr[0]
-            col_names = [f"{col}__{i}" for col in X.columns]
-            part_df = pd.DataFrame(window_flat, columns=col_names)
+        for i in range(0, num_windows * self.stride, self.stride):
+            window = values[i:i + self.window]
+            window_flat = window.flatten()
+            col_names = [f"{col}__{j}" for j in range(self.window) for col in X.columns]
+            part_df = pd.DataFrame([window_flat], columns=col_names)
             dfs.append(part_df)
 
-        final_df = pd.concat(dfs, axis=1).reset_index(names=["subject_id"])
+        final_df = pd.concat(dfs, axis=0, ignore_index=True).reset_index(names=["subject_id"])
+
+        if self.gathering_strategy:
+            final_df = self.aggregate_anomalies(final_df)
+
         return final_df
+
+    def aggregate_anomalies(self,
+                            X: pd.DataFrame
+                            ) -> pd.DataFrame:
+        """
+        This function aggregates anomalies. After transform there are a lot of cols with anomalies and
+        gathering them into one target vector is required.
+        Args:
+            X: Sliced data
+
+        Returns:
+            Dataframe with target vector
+        """
+        X_ = X.copy()
+        match self.gathering_strategy:
+            case "any":
+                anomaly_cols_names = [col for col in X.columns if col.startswith("anomaly")]
+                anomalies_cols = X[anomaly_cols_names]
+
+                aggregated = np.any(anomalies_cols, axis=1)
+                X_.drop(anomaly_cols_names, axis=1, inplace=True)
+                X_["anomaly"] = aggregated.astype(int)
+                return X_
+            case _:
+                raise ValueError(f"Unknown gathering strategy {self.gathering_strategy}.")

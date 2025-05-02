@@ -5,8 +5,11 @@ from jpype.types import *
 import pandas as pd
 import os
 import shutil
+import tempfile
 
 from sklearn.exceptions import NotFittedError
+from bayes_opt import BayesianOptimization
+from sklearn.metrics import f1_score
 
 from applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter import TemporalDBNTransformer
 
@@ -30,8 +33,7 @@ class FastTimeSeriesDetector:
                  artificial_slicing_params: dict = None,
                  scoring_function: str = 'll',
                  markov_lag: int = 1,
-                 non_stationary: bool = False,
-                 parameters: bool = True):
+                 non_stationary: bool = False):
         """
         Initializes the FastTimeSeriesDetector.
 
@@ -44,14 +46,13 @@ class FastTimeSeriesDetector:
             scoring_function: Scoring function used by the Java DBN learner ('ll' or 'MDL').
             markov_lag: The Markov lag (time distance) for DBN learning.
             non_stationary: Learn separate models for each transition instead of one shared model.
-            parameters: Whether to output DBN parameters.
         """
         self.args = [
             "-p", str(num_parents),
             "-s", scoring_function,
             "-m", str(markov_lag),
             "-ns", str(non_stationary),
-            "-pm" if parameters else ""
+            "-pm"
         ]
         base = os.path.join(os.path.dirname(os.path.abspath(__file__)))
         module_path = os.path.join(base, "dbnod_modified.jar")
@@ -99,14 +100,16 @@ class FastTimeSeriesDetector:
             transformer = TemporalDBNTransformer(**self.artificial_slicing_params)
             X = transformer.fit_transform(X)
 
-        return self.fit_predict(X)
+        self.scores_ = self.decision_function(X)
 
-    def predict_scores(self, X: pd.DataFrame):
+        return self
+
+    def predict_scores(self, X: pd.DataFrame=None):
         """
         Computes raw anomaly scores from the trained DBN.
 
         Args:
-            X: Input data.
+            X: Input data. Not used in this implementation.
 
         Returns:
             np.ndarray: Raw scores.
@@ -114,19 +117,64 @@ class FastTimeSeriesDetector:
         if not self._is_fitted():
             raise NotFittedError("DBN model has not been fitted.")
 
-        return self.decision_function(X)
+        return self.scores_
 
-    def fit_predict(self, X: pd.DataFrame):
+    def calibrate(self,
+                  y_true: pd.Series | np.ndarray,
+                  calibration_bounds: dict | None = None,
+                  verbose: int = 1,
+                  calibration_params: dict = None,
+                  ):
+        """
+        A method to calibrate the DBN. Calibration means finding absolute and relative thresholds.
+        Utilizes bayesian optimization.
+
+        Args:
+            y_true: values to calibrate on
+            calibration_bounds: bound of calibration values. Must contain abs_thrs and rel_thrs keys.
+            verbose: verbosity level.
+            calibration_params: calibration parameters for optimization.
+
+        """
+
+        def func_to_optimize(abs_thrs, rel_thrs):
+            self.abs_threshold = abs_thrs
+            self.rel_threshold = rel_thrs
+            preds = self.predict()
+            return f1_score(y_true, preds)
+
+        if calibration_params is None:
+            calibration_params = dict(init_points=10, n_iter=100)
+
+        if calibration_bounds is None:
+            pbounds = {'abs_thrs': (-8, -2), 'rel_thrs': (0.2, .95)}
+        else:
+            pbounds = calibration_bounds
+
+        optimizer = BayesianOptimization(
+            f=func_to_optimize,
+            pbounds=pbounds,
+            verbose=verbose
+        )
+
+        optimizer.maximize(**calibration_params)
+
+        self.abs_threshold, self.rel_threshold = optimizer.max["params"]["abs_thrs"], optimizer.max["params"]["rel_thrs"]
+        return self
+
+    def predict(self, X: pd.DataFrame=None):
         """
         Trains the model and applies anomaly decision logic.
 
         Args:
-            X: Input features.
+            X: Input features. Not used.
 
         Returns:
             np.ndarray: Binary anomaly labels (1 = anomalous).
         """
-        self.scores_ = self.decision_function(X)
+        if not self._is_fitted():
+            raise NotFittedError("DBN model has not been fitted.")
+
         thresholded = np.where((self.scores_ < self.abs_threshold), 1, 0)
 
         # Aggregate per-sample anomaly flags and compare against relative threshold
@@ -146,17 +194,17 @@ class FastTimeSeriesDetector:
         from com.github.tDBN.cli import LearnFromFile
 
         # Write data to disk and call Java scoring
-        X.to_csv("temp.csv", index=False)
-        self.args.extend(["-i", "temp.csv"])
-        result = LearnFromFile.ComputeScores(JArray(JString)(self.args))
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            X.to_csv(tmpfile, index=False)
+            self.args.extend(["-i", tmpfile.name])
+            result = LearnFromFile.ComputeScores(JArray(JString)(self.args))
 
-        outlier_indexes, scores = result
+            outlier_indexes, scores = result
 
-        # Convert Java 2D double array into numpy
-        py_2d_array = []
-        for i in range(len(scores)):
-            py_2d_array.append(list(scores[i]))
-        os.remove("temp.csv")
+            # Convert Java 2D double array into numpy
+            py_2d_array = []
+            for i in range(len(scores)):
+                py_2d_array.append(list(scores[i]))
 
-        scores = np.asarray(py_2d_array)
-        return scores
+            scores = np.asarray(py_2d_array)
+            return scores

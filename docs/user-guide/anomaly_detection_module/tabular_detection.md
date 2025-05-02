@@ -3,7 +3,7 @@
 ## Overview
 
 Tabular anomaly detection in `applybn` implements unsupervised outlier detection by estimating scores. 
-Scores are managed by [TabularDetector](../../api/anomaly_detection/tabular_anomaly_detector) object.
+Scores are managed by [TabularDetector](../../api/anomaly_detection/tabular_anomaly_detector.md) object.
 The basis of this algorithm was taken 
 from ["Effective Outlier Detection based on Bayesian Network and Proximity"](https://ieeexplore.ieee.org/document/8622230). 
 
