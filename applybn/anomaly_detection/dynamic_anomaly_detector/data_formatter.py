@@ -1,7 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 from typing import Optional, Literal
 
 class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
@@ -86,7 +85,7 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         for i in range(0, num_windows * self.stride, self.stride):
             window = values[i:i + self.window]
             window_flat = window.flatten()
-            col_names = [f"{col}__{j}" for j in range(self.window) for col in X.columns]
+            col_names = [f"{col}__{j}" for j in range(1, self.window + 1) for col in X.columns]
             part_df = pd.DataFrame([window_flat], columns=col_names)
             dfs.append(part_df)
 
