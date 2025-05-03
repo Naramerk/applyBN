@@ -62,3 +62,5 @@ Contributions to applybn are welcome! If you’re interested in improving any of
 ## License
 
 applybn is distributed under the MIT License. See the `LICENSE` file for more information.
+## Acknowledgement
+The project is supported by [FASIE](https://fasie.ru/) - Foundation for Assistance to Small Innovative Enterprises.
