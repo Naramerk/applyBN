@@ -11,10 +11,15 @@ from sklearn.exceptions import NotFittedError
 from bayes_opt import BayesianOptimization
 from sklearn.metrics import f1_score
 
-from applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter import TemporalDBNTransformer
+from applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter import (
+    TemporalDBNTransformer,
+)
 
 if not shutil.which("java"):
-    raise NotImplementedError("Java is not installed. In order to use the fast method you need to install it first.")
+    raise NotImplementedError(
+        "Java is not installed. In order to use the fast method you need to install it first."
+    )
+
 
 class FastTimeSeriesDetector:
     """
@@ -25,15 +30,17 @@ class FastTimeSeriesDetector:
     using a sliding window mechanism.
     """
 
-    def __init__(self,
-                 abs_threshold: float = -4.5,
-                 rel_threshold: float = 0.8,
-                 num_parents: int = 3,
-                 artificial_slicing: bool = False,
-                 artificial_slicing_params: dict = None,
-                 scoring_function: str = 'll',
-                 markov_lag: int = 1,
-                 non_stationary: bool = False):
+    def __init__(
+        self,
+        abs_threshold: float = -4.5,
+        rel_threshold: float = 0.8,
+        num_parents: int = 3,
+        artificial_slicing: bool = False,
+        artificial_slicing_params: dict = None,
+        scoring_function: str = "ll",
+        markov_lag: int = 1,
+        non_stationary: bool = False,
+    ):
         """
         Initializes the FastTimeSeriesDetector.
 
@@ -48,17 +55,25 @@ class FastTimeSeriesDetector:
             non_stationary: Learn separate models for each transition instead of one shared model.
         """
         self.args = [
-            "-p", str(num_parents),
-            "-s", scoring_function,
-            "-m", str(markov_lag),
-            "-ns", str(non_stationary),
-            "-pm"
+            "-p",
+            str(num_parents),
+            "-s",
+            scoring_function,
+            "-m",
+            str(markov_lag),
+            "-ns",
+            str(non_stationary),
+            "-pm",
         ]
         base = os.path.join(os.path.dirname(os.path.abspath(__file__)))
         module_path = os.path.join(base, "dbnod_modified.jar")
 
         if not jpype.isJVMStarted():
-            jpype.startJVM(classpath=[module_path, ])
+            jpype.startJVM(
+                classpath=[
+                    module_path,
+                ]
+            )
 
         self.abs_threshold = abs_threshold
         self.rel_threshold = rel_threshold
@@ -81,7 +96,9 @@ class FastTimeSeriesDetector:
             raise TypeError("subject_id column not found in data.")
 
         if not all("__" in col_name for col_name in X.columns.drop("subject_id")):
-            raise TypeError("Data type error. Column names must contain '__' characters.")
+            raise TypeError(
+                "Data type error. Column names must contain '__' characters."
+            )
 
     def fit(self, X: pd.DataFrame):
         """
@@ -104,7 +121,7 @@ class FastTimeSeriesDetector:
 
         return self
 
-    def predict_scores(self, X: pd.DataFrame=None):
+    def predict_scores(self, X: pd.DataFrame = None):
         """
         Computes raw anomaly scores from the trained DBN.
 
@@ -119,12 +136,13 @@ class FastTimeSeriesDetector:
 
         return self.scores_
 
-    def calibrate(self,
-                  y_true: pd.Series | np.ndarray,
-                  calibration_bounds: dict | None = None,
-                  verbose: int = 1,
-                  calibration_params: dict = None,
-                  ):
+    def calibrate(
+        self,
+        y_true: pd.Series | np.ndarray,
+        calibration_bounds: dict | None = None,
+        verbose: int = 1,
+        calibration_params: dict = None,
+    ):
         """
         A method to calibrate the DBN. Calibration means finding absolute and relative thresholds.
         Utilizes bayesian optimization.
@@ -147,22 +165,23 @@ class FastTimeSeriesDetector:
             calibration_params = dict(init_points=10, n_iter=100)
 
         if calibration_bounds is None:
-            pbounds = {'abs_thrs': (-8, -2), 'rel_thrs': (0.2, .95)}
+            pbounds = {"abs_thrs": (-8, -2), "rel_thrs": (0.2, 0.95)}
         else:
             pbounds = calibration_bounds
 
         optimizer = BayesianOptimization(
-            f=func_to_optimize,
-            pbounds=pbounds,
-            verbose=verbose
+            f=func_to_optimize, pbounds=pbounds, verbose=verbose
         )
 
         optimizer.maximize(**calibration_params)
 
-        self.abs_threshold, self.rel_threshold = optimizer.max["params"]["abs_thrs"], optimizer.max["params"]["rel_thrs"]
+        self.abs_threshold, self.rel_threshold = (
+            optimizer.max["params"]["abs_thrs"],
+            optimizer.max["params"]["rel_thrs"],
+        )
         return self
 
-    def predict(self, X: pd.DataFrame=None):
+    def predict(self, X: pd.DataFrame = None):
         """
         Trains the model and applies anomaly decision logic.
 

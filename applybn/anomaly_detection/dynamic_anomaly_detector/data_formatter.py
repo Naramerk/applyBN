@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional, Literal
 
+
 class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
     """
     Transformer for creating a temporal windowed representation of tabular data
@@ -28,12 +29,14 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
                 1        1      11     2      12
 
     """
-    def __init__(self,
-                 window: int = 100,
-                 include_label: bool = True,
-                 stride: int = 1,
-                 gathering_strategy: None | Literal["any"] = "any",):
 
+    def __init__(
+        self,
+        window: int = 100,
+        include_label: bool = True,
+        stride: int = 1,
+        gathering_strategy: None | Literal["any"] = "any",
+    ):
         """
         Initialize the transformer.
 
@@ -83,22 +86,24 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
 
         dfs = []
         for i in range(0, num_windows * self.stride, self.stride):
-            window = values[i:i + self.window]
+            window = values[i : i + self.window]
             window_flat = window.flatten()
-            col_names = [f"{col}__{j}" for j in range(1, self.window + 1) for col in X.columns]
+            col_names = [
+                f"{col}__{j}" for j in range(1, self.window + 1) for col in X.columns
+            ]
             part_df = pd.DataFrame([window_flat], columns=col_names)
             dfs.append(part_df)
 
-        final_df = pd.concat(dfs, axis=0, ignore_index=True).reset_index(names=["subject_id"])
+        final_df = pd.concat(dfs, axis=0, ignore_index=True).reset_index(
+            names=["subject_id"]
+        )
 
         if self.gathering_strategy:
             final_df = self.aggregate_anomalies(final_df)
 
         return final_df
 
-    def aggregate_anomalies(self,
-                            X: pd.DataFrame
-                            ) -> pd.DataFrame:
+    def aggregate_anomalies(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         This function aggregates anomalies. After transform there are a lot of cols with anomalies and
         gathering them into one target vector is required.
@@ -111,7 +116,9 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         X_ = X.copy()
         match self.gathering_strategy:
             case "any":
-                anomaly_cols_names = [col for col in X.columns if col.startswith("anomaly")]
+                anomaly_cols_names = [
+                    col for col in X.columns if col.startswith("anomaly")
+                ]
                 anomalies_cols = X[anomaly_cols_names]
 
                 aggregated = np.any(anomalies_cols, axis=1)
@@ -119,4 +126,6 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
                 X_["anomaly"] = aggregated.astype(int)
                 return X_
             case _:
-                raise ValueError(f"Unknown gathering strategy {self.gathering_strategy}.")
+                raise ValueError(
+                    f"Unknown gathering strategy {self.gathering_strategy}."
+                )

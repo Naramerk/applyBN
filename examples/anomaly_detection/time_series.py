@@ -1,7 +1,10 @@
-from applybn.anomaly_detection.dynamic_anomaly_detector.fast_time_series_detector import FastTimeSeriesDetector
+from applybn.anomaly_detection.dynamic_anomaly_detector.fast_time_series_detector import (
+    FastTimeSeriesDetector,
+)
 import pandas as pd
 import numpy as np
 from sklearn.metrics import f1_score
+
 
 def add_anomalies(df, anomaly_fraction=0.05, random_state=None):
     if random_state is not None:
@@ -26,9 +29,14 @@ def add_anomalies(df, anomaly_fraction=0.05, random_state=None):
 
     return df_anomaly, anomaly_labels
 
-df_discrete = pd.read_csv("../../data/anomaly_detection/ts/meteor_discrete_example_data.csv")
 
-df_anomaly, anomalies = add_anomalies(df_discrete, anomaly_fraction=0.1, random_state=42)
+df_discrete = pd.read_csv(
+    "../../data/anomaly_detection/ts/meteor_discrete_example_data.csv"
+)
+
+df_anomaly, anomalies = add_anomalies(
+    df_discrete, anomaly_fraction=0.1, random_state=42
+)
 
 detector = FastTimeSeriesDetector(markov_lag=1, num_parents=1)
 
