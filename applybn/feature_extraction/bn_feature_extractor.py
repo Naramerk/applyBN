@@ -124,6 +124,16 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
         return result
 
     def create_black_list(self, X: pd.DataFrame, y: Optional[str]):
+        """
+        Creates a black list of edges to prevent the target variable from being a parent of any features.
+
+        Args:
+            X: The input data containing feature columns.
+            y: The name of the target variable. If provided, edges from the target to other features are blacklisted.
+
+        Returns:
+            A list of tuples representing edges to be excluded from the Bayesian Network structure.
+        """
         if not y:
             return []
         target_node = y
