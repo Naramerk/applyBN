@@ -57,7 +57,7 @@ The documentation with examples can be found [here](https://anaxagor.github.io/a
 
 ## Contributing
 
-Contributions to applybn are welcome! If you’re interested in improving any of the features or testing new branches, please see the `CONTRIBUTING.md` (WIP) file for details.
+Contributions to applybn are welcome! If you’re interested in improving any of the features or testing new branches, please see the [How to contribute](https://anaxagor.github.io/applybn/development/contributing/) section of the documentation.
 
 ## License
 
