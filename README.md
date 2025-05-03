@@ -10,11 +10,8 @@
 <br>
 
 applybn is an open-source multi-purpose framework based on Bayesian networks and Causal networks.
-The main idea is to implement the main functions of data analysis based on understandable and interpretable algorithms of Bayesian networks and causal models.
+It introduces data analysis based on understandable and interpretable algorithms of Bayesian networks and causal models.
 ![image](https://github.com/user-attachments/assets/996f8e5a-1742-4849-a64f-58b97a4cf17d)
-
-
-**The repository is currently work-in-progress**
 
 ## Key Features
 ### 1. Anomaly Detection in time-series and tabular data
@@ -37,21 +34,12 @@ The main idea is to implement the main functions of data analysis based on under
 
 ### 3. **Feature Selection module**
   - **Feature Selection** for label prediction.
-  - **Feature Generation** for label prediction enchancement.
+  - **Feature Extraction** for label prediction enchancement.
 
 ### 4. **Explainable Module**
 #### **Causal Analysis for Machine Learning Models**
    - **Analyzing Model Components**: A structural causal model (SCM) is built to analyze deep learning models, allowing for the pruning of unimportant parts (e.g., filters in CNNs) by evaluating their causal importance.
    - **Explaining Data Impact on Predictions**: applybn allows for causal inference between features and the model’s confidence scores. By calculating the **Average Causal Effect (ACE)**, it helps identify which features significantly influence model uncertainty, providing valuable insights for improving or debugging models.
-
-## Work-in-Progress
-
-applybn is actively under development, with key features currently being tested in dedicated branches. Contributions to these features are welcome:
-
-- [Anomaly Detection Module](https://github.com/Anaxagor/applyBN/tree/anomaly-detection-module)
-- [Data Generation Module](https://github.com/Anaxagor/applyBN/tree/data-generation-module)
-- [Feature Selection Module](https://github.com/Anaxagor/applyBN/tree/feature-selection-module)
-- [Explainable Module](https://github.com/Anaxagor/applyBN/tree/explainable-module)
 
 ## Installation
 
@@ -63,9 +51,9 @@ cd applybn
 poetry install
 ```
 
-## Usage Example
+## Documentation with examples
 
-API is WIP.
+The documentation with examples can be found [here](https://anaxagor.github.io/applybn/).
 
 ## Contributing
 
@@ -74,5 +62,3 @@ Contributions to applybn are welcome! If you’re interested in improving any of
 ## License
 
 applybn is distributed under the MIT License. See the `LICENSE` file for more information.
-
-For additional documentation and technical details, visit our [documentation](https://anaxagor.github.io/applybn/).
