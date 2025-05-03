@@ -98,7 +98,7 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
             names=["subject_id"]
         )
 
-        if self.gathering_strategy:
+        if self.gathering_strategy and self.include_label:
             final_df = self.aggregate_anomalies(final_df)
 
         return final_df

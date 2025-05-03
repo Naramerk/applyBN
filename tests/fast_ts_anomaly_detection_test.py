@@ -63,7 +63,8 @@ def test_fit_predict_with_dynamic_java_mock_and_calls(
         ) as mock_decision:
             mock_decision.return_value = np.array(mock_scores)
 
-            preds = detector.fit(input_df)
+            detector.fit(input_df)
+            preds = detector.predict(input_df)
 
             # ✅ Assert return is correct
             assert isinstance(preds, np.ndarray)
