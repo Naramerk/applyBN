@@ -44,4 +44,4 @@ detector.fit(df_anomaly)
 detector.calibrate(anomalies)
 preds_cont = detector.predict(df_anomaly)
 
-print(f1_score(anomalies, preds_cont))
+print(f1_score(anomalies, preds_cont)) # 0.7352941176470589
