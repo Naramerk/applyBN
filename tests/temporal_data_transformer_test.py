@@ -25,7 +25,7 @@ def test_transform_basic_with_labels(sample_data):
     Xt = transformer.transform(X, y)
 
     assert isinstance(Xt, pd.DataFrame)
-    assert Xt.shape[0] == len(X) - 2  # (n - window + 1)
+    assert Xt.shape[0] == len(X) - 3 + 1  # (n - window + 1)
     assert (
         Xt.shape[1] == (3 * (X.shape[1])) + 2
     )  # + 1 for anomaly label + 1 for subject_id
@@ -68,3 +68,14 @@ def test_transform_raises_mismatched_lengths(sample_data):
     transformer = TemporalDBNTransformer(window=3, include_label=True)
     with pytest.raises(ValueError, match="same number of rows"):
         transformer.transform(X.iloc[:-1], y)
+
+
+def test_transform_windows_fraction(sample_data):
+    X, y = sample_data
+    row_numbers, _ = X.shape
+
+    transformer_window_rel = TemporalDBNTransformer(window=0.5, include_label=True)
+    true_windows_size = int(row_numbers * 0.5)
+    Xt = transformer_window_rel.transform(X, y)
+
+    assert Xt.shape[0] == row_numbers - true_windows_size + 1

@@ -32,7 +32,7 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        window: int = 100,
+        window: float = 100,
         include_label: bool = True,
         stride: int = 1,
         gathering_strategy: None | Literal["any"] = "any",
@@ -41,7 +41,8 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         Initialize the transformer.
 
         Args:
-            window: The size of the sliding temporal window.
+            window: If < 1, the size of the sliding temporal window. If > 1, number of rows in window.
+            stride: The size of the sliding temporal stride.
             include_label: Whether to include the label (`y`) column in the transformed output.
         """
         self.window = window
@@ -82,14 +83,19 @@ class TemporalDBNTransformer(BaseEstimator, TransformerMixin):
         if n_rows < self.window:
             raise ValueError(f"Input data must have at least {self.window} rows.")
 
-        num_windows = (n_rows - self.window) // self.stride + 1
+        if self.window < 1:
+            window_size = int(self.window * n_rows)
+        else:
+            window_size = self.window
+
+        num_windows = (n_rows - window_size) // self.stride + 1
 
         dfs = []
         for i in range(0, num_windows * self.stride, self.stride):
-            window = values[i : i + self.window]
+            window = values[i : i + window_size]
             window_flat = window.flatten()
             col_names = [
-                f"{col}__{j}" for j in range(1, self.window + 1) for col in X.columns
+                f"{col}__{j}" for j in range(1, window_size + 1) for col in X.columns
             ]
             part_df = pd.DataFrame([window_flat], columns=col_names)
             dfs.append(part_df)
