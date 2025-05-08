@@ -54,6 +54,64 @@ cd applybn
 poetry install
 ```
 
+## Scikit-learn Pipeline example
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+from applybn.core.bamt_wrappers import BamtPreprocessorWrapper
+from applybn.feature_selection.bn_nmi_feature_selector import NMIFeatureSelector
+from applybn.core.estimators.estimator_factory import EstimatorPipelineFactory
+from bamt.preprocessors import Preprocessor
+from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
+
+def create_dataset(n_samples=1000, n_features=5):
+    X = np.random.rand(n_samples, n_features)
+    y_continuous = X[:, 0] + X[:, 1] + np.random.normal(0, 0.1, n_samples)
+    y = pd.qcut(y_continuous, q=3, labels=False)
+    X_df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(n_features)])
+    y_series = pd.Series(y, name='target')
+    return X_df, y_series
+
+X, y = create_dataset()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 0. Define BAMT preprocessor and wrap it for scikit-learn
+bamt_preprocessor_stages = [
+    ('encoder', LabelEncoder()),
+    ('discretizer', KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='uniform'))
+]
+bamt_actual_preprocessor = Preprocessor(bamt_preprocessor_stages)
+
+# 1. Define Feature Selector
+nmi_selector = NMIFeatureSelector(threshold=0.01, n_bins=5)
+
+# 2. Define Bayesian Network Estimator using EstimatorPipelineFactory for classification
+classifier_factory = EstimatorPipelineFactory(task_type="classification")
+
+# This factory call creates a CorePipeline containing BamtPreprocessorWrapper and BNEstimator
+applybn_internal_pipeline = classifier_factory(preprocessor=bamt_actual_preprocessor)
+
+# 3. Create the full scikit-learn pipeline
+full_pipeline = Pipeline([
+    ('feature_selector', nmi_selector),
+    ('applybn_processing_and_estimation', applybn_internal_pipeline)
+])
+
+# 4. Train the pipeline
+full_pipeline.fit(X_train, y_train)
+
+# 5. Make predictions
+y_pred = full_pipeline.predict(X_test)
+
+# 6. Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+```
+
 ## Help and Support
 
 ### Documentation with examples
