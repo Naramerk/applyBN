@@ -114,6 +114,7 @@ nav:
       - BN-based oversampling vs SMOTE: examples/bn_oversampling.md
       - Custom Estimators: examples/custom_estimators.md
       - BN-based vs Polynomial & Interaction Features: examples/feature_extraction.md
+      - Causal Concept Explanation: examples/concept_causal_effect.md
 
   - Development and Contribution:
       - development/contributing.md
