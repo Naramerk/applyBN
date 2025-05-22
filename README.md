@@ -121,7 +121,10 @@ The documentation with examples can be found [here](https://anaxagor.github.io/a
 ### Communitcation
 
 Feel free to create new [issues](https://github.com/Anaxagor/applybn/issues).
-If you have questions or suggestions, you can contact us at the following address: ideeva@itmo.ru (Irina Deeva) 
+
+If you have questions or suggestions, you can contact us at the following resources:
+* [Telegram chat helpdesk](https://t.me/+4FOcyF0Rri00ZGEy)
+* ideeva@itmo.ru (Irina Deeva) 
 
 ### Contributing
 
