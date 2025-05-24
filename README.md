@@ -39,7 +39,7 @@ It introduces data analysis based on understandable and interpretable algorithms
 ### 4. **Explainable Analysis**
 #### **Causal Analysis for Machine Learning Models**
    - The method of analyzing model components - a structural causal model (SCM) is built to analyze deep learning models, allowing for the pruning of unimportant parts (e.g., filters in CNNs) by evaluating their causal importance.
-   - The method of explaining data impact on predictions allows for causal inference between features and the model’s confidence scores. By calculating the **Average Causal Effect (ACE)**, it helps identify which features significantly influence model uncertainty, providing valuable insights for improving or debugging models.
+   - The method of explaining data impact on predictions allows for causal inference between features and the model's confidence scores. By calculating the **Average Causal Effect (ACE)**, it helps identify which features significantly influence model uncertainty, providing valuable insights for improving or debugging models.
 
 ### 5. **Scikit-learn compatible**
 All the estimators and data transformers are scikit-learn compatible.
@@ -56,60 +56,103 @@ poetry install
 
 ## Scikit-learn Pipeline example
 
+An example demonstrating how to use several components from the `applybn` library in a scikit-learn compatible pipeline. We'll cover feature selection, feature generation, oversampling for imbalanced datasets, and anomaly detection.
+
 ```python
-import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import KBinsDiscretizer
+from imblearn.pipeline import Pipeline as ImbPipeline
+from sklearn.linear_model import LogisticRegression
 
-from applybn.core.bamt_wrappers import BamtPreprocessorWrapper
-from applybn.feature_selection.bn_nmi_feature_selector import NMIFeatureSelector
-from applybn.core.estimators.estimator_factory import EstimatorPipelineFactory
-from bamt.preprocessors import Preprocessor
-from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
+from applybn.feature_selection.ce_feature_selector import CausalFeatureSelector
+from applybn.feature_extraction.bn_feature_extractor import BNFeatureGenerator
+from applybn.imbalanced.over_sampling.bn_over_sampler import BNOverSampler
+from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
 
-def create_dataset(n_samples=1000, n_features=5):
-    X = np.random.rand(n_samples, n_features)
-    y_continuous = X[:, 0] + X[:, 1] + np.random.normal(0, 0.1, n_samples)
-    y = pd.qcut(y_continuous, q=3, labels=False)
-    X_df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(n_features)])
-    y_series = pd.Series(y, name='target')
+
+def generate_example_data(n_samples=200, n_features=5, n_cat_features=2, target_name='target_class', imbalance_ratio=0.1, random_state=42):
+    """Generates a synthetic imbalanced dataset."""
+    rng = np.random.RandomState(random_state)
+    X_cont_data = rng.rand(n_samples, n_features - n_cat_features)
+    cont_feature_names = [f'cont_feature_{j}' for j in range(n_features - n_cat_features)]
+    X_cont_df = pd.DataFrame(X_cont_data, columns=cont_feature_names)
+    
+    X_cat_df = pd.DataFrame()
+    for i in range(n_cat_features):
+        cat_feature_name = f'cat_feature_{i}'
+        temp_cont_for_cat = rng.rand(n_samples, 1)
+        n_bins_cat = rng.randint(2, 4)
+        discretizer = KBinsDiscretizer(n_bins=n_bins_cat, encode='ordinal', strategy='uniform', subsample=None, random_state=rng)
+        X_cat_df[cat_feature_name] = discretizer.fit_transform(temp_cont_for_cat).astype(int).astype(str)
+        
+    X_df = pd.concat([X_cont_df, X_cat_df], axis=1)
+    
+    n_class1 = int(n_samples * imbalance_ratio)
+    n_class0 = n_samples - n_class1
+    y_array = np.array([0] * n_class0 + [1] * n_class1)
+    rng.shuffle(y_array)
+    y_series = pd.Series(y_array, name=target_name)
     return X_df, y_series
 
-X, y = create_dataset()
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# --- Main Example ---
+TARGET_NAME = 'target_class_example'
 
-# 0. Define BAMT preprocessor and wrap it for scikit-learn
-bamt_preprocessor_stages = [
-    ('encoder', LabelEncoder()),
-    ('discretizer', KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='uniform'))
-]
-bamt_actual_preprocessor = Preprocessor(bamt_preprocessor_stages)
+# 1. Generate Data
+print("1. Generating Synthetic Data...")
+X_df, y_s = generate_example_data(n_samples=250, n_features=6, n_cat_features=2, target_name=TARGET_NAME, imbalance_ratio=0.15, random_state=42)
+X_train_df, X_test_df, y_train_s, y_test_s = train_test_split(X_df, y_s, test_size=0.3, random_state=42, stratify=y_s)
+print(f"   Train data: {X_train_df.shape}, Test data: {X_test_df.shape}")
+print(f"   Target distribution (train):\\n{y_train_s.value_counts(normalize=True).to_string()}\n")
 
-# 1. Define Feature Selector
-nmi_selector = NMIFeatureSelector(threshold=0.01, n_bins=5)
+# 2. Causal Feature Selection
+print("2. Causal Feature Selection...")
+selector = CausalFeatureSelector(n_bins=3) # n_bins=3 for small data
+selector.fit(X_train_df.to_numpy(), y_train_s.to_numpy())
+selected_features_mask = selector.get_support()
 
-# 2. Define Bayesian Network Estimator using EstimatorPipelineFactory for classification
-classifier_factory = EstimatorPipelineFactory(task_type="classification")
+if not np.any(selected_features_mask):
+    print("   Warning: No features selected by CausalFeatureSelector. Using all features.")
+    X_train_selected_df = X_train_df.copy()
+    X_test_selected_df = X_test_df.copy()
+else:
+    X_train_selected_df = X_train_df.loc[:, selected_features_mask]
+    X_test_selected_df = X_test_df.loc[:, selected_features_mask]
+print(f"   Selected {len(X_train_selected_df.columns)} features: {X_train_selected_df.columns.tolist()}\n")
 
-# This factory call creates a CorePipeline containing BamtPreprocessorWrapper and BNEstimator
-applybn_internal_pipeline = classifier_factory(preprocessor=bamt_actual_preprocessor)
+# 3. Processing Pipeline (Feature Generation, Oversampling, Classification)
+print("3. Processing Pipeline (BNFeatureGenerator, BNOverSampler, Classifier)...")
+X_train_selected_df.columns = X_train_selected_df.columns.astype(str)
+X_test_selected_df.columns = X_test_selected_df.columns.astype(str)
 
-# 3. Create the full scikit-learn pipeline
-full_pipeline = Pipeline([
-    ('feature_selector', nmi_selector),
-    ('applybn_processing_and_estimation', applybn_internal_pipeline)
+processing_pipeline = ImbPipeline([
+    ('bn_feature_generator', BNFeatureGenerator()), 
+    ('oversampler', BNOverSampler(class_column=TARGET_NAME, strategy='minority', shuffle=True)),
+    ('classifier', LogisticRegression(solver='liblinear', random_state=42))
 ])
 
-# 4. Train the pipeline
-full_pipeline.fit(X_train, y_train)
+processing_pipeline.fit(X_train_selected_df, y_train_s)
+pipeline_score = processing_pipeline.score(X_test_selected_df, y_test_s)
+print(f"   Pipeline test accuracy: {pipeline_score:.4f}\n")
 
-# 5. Make predictions
-y_pred = full_pipeline.predict(X_test)
+# 4. TabularDetector Example
+print("4. TabularDetector Anomaly Detection...")
+# TabularDetector expects target_name within the input DataFrame X.
+X_train_for_detector = X_train_selected_df.copy()
+X_train_for_detector[TARGET_NAME] = y_train_s
 
-# 6. Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
+detector = TabularDetector(target_name=TARGET_NAME, verbose=0) # verbose=0 for less output
+detector.fit(X_train_for_detector) # y is None as target is in X
+anomaly_predictions_train = detector.predict(X_train_for_detector)
+print(f"   Anomalies in training data: {np.sum(anomaly_predictions_train)}/{len(anomaly_predictions_train)}")
+
+X_test_for_detector = X_test_selected_df.copy()
+X_test_for_detector[TARGET_NAME] = y_test_s
+test_anomaly_predictions = detector.predict(X_test_for_detector)
+print(f"   Anomalies in test data: {np.sum(test_anomaly_predictions)}/{len(test_anomaly_predictions)}\n")
+
+print("--- Example Finished ---")
 ```
 
 ## Help and Support
@@ -128,7 +171,7 @@ If you have questions or suggestions, you can contact us at the following resour
 
 ### Contributing
 
-Contributions to applybn are welcome! If you’re interested in improving any of the features or testing new branches, please see the [How to contribute](https://anaxagor.github.io/applybn/development/contributing/) section of the documentation.
+Contributions to applybn are welcome! If you're interested in improving any of the features or testing new branches, please see the [How to contribute](https://anaxagor.github.io/applybn/development/contributing/) section of the documentation.
 
 ### License
 
