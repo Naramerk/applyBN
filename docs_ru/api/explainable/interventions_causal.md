@@ -1,11 +1,11 @@
-# Causal analysis based on interventions
+# Каузальный анализ на основе вмешательств
 
-[User Guide reference](../../user-guide/explainable_module/interventional_analysis.md)
+[Ссылка на руководство пользователя](../../user-guide/explainable_module/interventional_analysis.md)
 
 ::: applybn.explainable.causal_analysis.InterventionCausalExplainer
 
 
-# Example
+# Пример
 
 ```python
 from applybn.explainable.causal_analysis import InterventionCausalExplainer

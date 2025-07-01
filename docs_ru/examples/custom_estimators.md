@@ -1,54 +1,54 @@
-# Estimators, Pipelines, and Bayesian Networks (Advanced)
+# Оценщики, конвейеры и байесовские сети (продвинутый уровень)
 
-## Overview
-Estimators provide a universal wrapper for `bamt` with an `sklearn`-compatible format, allowing developers to work seamlessly with Bayesian networks. The goal is to implement flexible estimator interfaces.
+## Обзор
+Оценщики предоставляют универсальную обертку для `bamt` в формате, совместимом с `sklearn`, что позволяет разработчикам беспрепятственно работать с байесовскими сетями. Цель состоит в реализации гибких интерфейсов оценщиков.
 
-The `applybn` framework follows this structure:
+Фреймворк `applybn` следует этой структуре:
 ```
-Bayesian Networks (Core: bamt)
+Байесовские сети (Ядро: bamt)
          |
          ↓
-  BN Estimators (Wrapper for bamt's networks) [Developer Level]
+  Оценщики BN (Обертка для сетей bamt) [Уровень разработчика]
          |
          ↓
-     Pipelines (applybn Interface for bamt) [User Level]
+     Конвейеры (Интерфейс applybn для bamt) [Уровень пользователя]
 ```
 
-## Bayesian Networks
-In `bamt`, there are three types of networks:
+## Байесовские сети
+В `bamt` существует три типа сетей:
 
 - `HybridBN`
 - `ContinuousBN`
 - `DiscreteBN`
 
-Additionally, `bamt` can automatically infer data types.
+Кроме того, `bamt` может автоматически определять типы данных.
 
-### Supported Data Types:
+### Поддерживаемые типы данных:
 ```python
-# Discrete types
+# Дискретные типы
 categorical_types = ["str", "O", "b", "categorical", "object", "bool"]
-# Discrete numerical types
+# Дискретные числовые типы
 integer_types = ["int32", "int64"]
-# Continuous types
+# Непрерывные типы
 float_types = ["float32", "float64"]
 ```
 !!! danger
 
-    **Please do not use this level unless necessary.**
+    **Пожалуйста, не используйте этот уровень, если в этом нет необходимости.**
 
 
-## Estimators
-Estimators are intended for developers and inherit from `sklearn.BaseEstimator`.
+## Оценщики
+Оценщики предназначены для разработчиков и наследуются от `sklearn.BaseEstimator`.
 
-### Detecting BN Type
-Use this static method to determine `bn_type` based on user data:
+### Определение типа BN
+Используйте этот статический метод для определения `bn_type` на основе пользовательских данных:
 ```python
 estimator = BNEstimator()
 data = pd.read_csv(DATA_PATH)
 estimator.detect_bn(data)
 ```
 
-### Fit Method
+### Метод Fit
 ```python
 estimator = BNEstimator()
 data = pd.read_csv(DATA_PATH)
@@ -59,15 +59,15 @@ fit_package = (preprocessed_data, descriptor, data)
 estimator.fit(fit_package)
 ```
 
-#### Learning Structure and Parameters (`partial=False`, default)
-##### Low-Level Approach:
+#### Обучение структуры и параметров (`partial=False`, по умолчанию)
+##### Низкоуровневый подход:
 ```python
-bn = HybridBN(use_mixture=False, has_logit=True)  # Can be any network type
+bn = HybridBN(use_mixture=False, has_logit=True)  # Может быть любой тип сети
 bn.add_nodes(descriptor)
 bn.add_edges(X, scoring_function=("MI", ))
 bn.fit_parameters(clean_data)
 ```
-##### Using `applybn`:
+##### Использование `applybn`:
 ```python
 estimator = BNEstimator(use_mixture=False, has_logit=True,
                         learning_params={"scoring_function": ("MI", )})
@@ -75,38 +75,38 @@ estimator = BNEstimator(use_mixture=False, has_logit=True,
 estimator.fit(fit_package)
 ```
 
-#### Learning Only Structure (`partial="structure"`)
-##### Low-Level Approach:
+#### Обучение только структуры (`partial="structure"`)
+##### Низкоуровневый подход:
 ```python
 bn.add_nodes(descriptor)
 bn.add_edges(X)
 ```
-##### Using `applybn`:
+##### Использование `applybn`:
 ```python
 estimator = BNEstimator(partial="structure")
 <...>
 estimator.fit(fit_package)
 ```
 
-#### Learning Only Parameters (`partial="parameters"`)
+#### Обучение только параметров (`partial="parameters"`)
 
 !!! note
 
-    This method requires a pre-trained structure. If `estimator.bn_` is not set or `estimator.bn_.edges` is empty, a `NotFittedError` is raised.
+    Этот метод требует предварительно обученной структуры. Если `estimator.bn_` не установлен или `estimator.bn_.edges` пуст, будет вызвано исключение `NotFittedError`.
 
-##### Low-Level Approach:
+##### Низкоуровневый подход:
 ```python
 bn.fit_parameters(clean_data)
 ```
-##### Using `applybn`:
+##### Использование `applybn`:
 ```python
 estimator = BNEstimator(partial="parameters")
 <...>
 estimator.fit(fit_package)
 ```
 
-### Customizing Estimators
-You can create custom estimators using metaprogramming and inheritance:
+### Настройка оценщиков
+Вы можете создавать собственные оценщики с помощью метапрограммирования и наследования:
 ```python
 from applybn.core.estimators.estimator_factory import EstimatorPipelineFactory
 import inspect
@@ -119,19 +119,19 @@ class StaticEstimator(estimator_with_default_interface):
         pass
 
 my_estimator = StaticEstimator()
-print(*inspect.getmembers(my_estimator), sep="\n")  # Verify available methods
+print(*inspect.getmembers(my_estimator), sep="\n")  # Проверка доступных методов
 ```
 
-### Delegation Strategy
-If a method is unknown to `BNEstimator`, it will be delegated to `self.bn_`. If `bn_` is not set, a `NotFittedError` or `AttributeError` is raised.
+### Стратегия делегирования
+Если метод неизвестен `BNEstimator`, он будет делегирован `self.bn_`. Если `bn_` не установлен, будет вызвано исключение `NotFittedError` или `AttributeError`.
 
-## Pipelines
-Pipelines combine `bamt_preprocessor` and `BNEstimator`. You can replace the preprocessor with any `scikit-learn`-compatible transformer.
+## Конвейеры
+Конвейеры объединяют `bamt_preprocessor` и `BNEstimator`. Вы можете заменить препроцессор любым трансформером, совместимым с `scikit-learn`.
 
-Pipelines follow a factory pattern, meaning any `getattr` call is delegated to the final pipeline step (usually `BNEstimator`).
+Конвейеры следуют паттерну фабрики, что означает, что любой вызов `getattr` делегируется последнему шагу конвейера (обычно `BNEstimator`).
 
-### Initializing the Factory
-Specify the task type (classification or regression) when initializing:
+### Инициализация фабрики
+Укажите тип задачи (классификация или регрессия) при инициализации:
 ```python
 interfaces = {"classification": ClassifierMixin,
               "regression": RegressorMixin}
@@ -141,54 +141,54 @@ import pandas as pd
 from applybn.core.estimators.estimator_factory import EstimatorPipelineFactory
 
 X = pd.read_csv(DATA_PATH)
-# y = X.pop("anomaly")  # Extract target variable if necessary
+# y = X.pop("anomaly")  # Извлечение целевой переменной, если необходимо
 
 factory = EstimatorPipelineFactory(task_type="classification")
 ```
 
-### Creating a Pipeline
+### Создание конвейера
 ```python
-# Default preprocessor pipeline
+# Конвейер с препроцессором по умолчанию
 pipeline = factory()
-# Custom preprocessor pipeline
+# Конвейер с пользовательским препроцессором
 # pipeline = factory(preprocessor)
 
 pipeline.fit(X)
 ```
 
-### Managing Pipeline Attributes
-To learn the structure first, perform intermediate steps, and then learn parameters:
+### Управление атрибутами конвейера
+Чтобы сначала обучить структуру, выполнить промежуточные шаги, а затем обучить параметры:
 ```python
-# Learn structure using MI scoring function
+# Обучение структуры с использованием функции оценки MI
 pipeline = factory(partial="structure", learning_params={"scoring_function": "MI"})
 pipeline.fit(X)
 
-# Intermediate processing steps
+# Промежуточные шаги обработки
 <...>
 
-# Learn parameters
+# Обучение параметров
 pipeline.set_params(bn_estimator__partial="parameters")
 pipeline.fit(X)
 
 print(pipeline.bn_.edges)
 ```
 
-#### Setting Parameters
-Pipeline factory components are structured as follows:
+#### Установка параметров
+Компоненты фабрики конвейера структурированы следующим образом:
 ```python
 CorePipeline([("preprocessor", wrapped_preprocessor),
               ("bn_estimator", estimator)])
 ```
-To modify preprocessor attributes:
+Чтобы изменить атрибуты препроцессора:
 ```python
 pipeline.set_params(preprocessor__attrName=value)
 ```
 !!! tip
 
-    Parameters can be set during initialization or after creating the pipeline.
+    Параметры могут быть установлены во время инициализации или после создания конвейера.
 
-### Delegation Strategy
-Pipeline methods delegate calls to the final step (`BNEstimator`).
+### Стратегия делегирования
+Методы конвейера делегируют вызовы последнему шагу (`BNEstimator`).
 ```python
 factory = EstimatorPipelineFactory(task_type="classification")
 pipeline = factory()
@@ -198,8 +198,8 @@ pipeline.get_info(as_df=False)
 pipeline.save("mybn")
 ```
 
-## Creating Custom Preprocessors
-To create a custom preprocessor, ensure it is `scikit-learn` compatible by inheriting from `BaseEstimator` and `TransformerMixin`.
+## Создание пользовательских препроцессоров
+Чтобы создать пользовательский препроцессор, убедитесь, что он совместим с `scikit-learn`, унаследовав от `BaseEstimator` и `TransformerMixin`.
 ```python
 from sklearn.base import BaseEstimator, TransformerMixin
 

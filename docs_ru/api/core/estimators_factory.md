@@ -1,7 +1,7 @@
-# Estimators factory
+# Фабрика оценщиков
 
-This module intended to build an instances related to `BNEstimator`. 
+Этот модуль предназначен для создания экземпляров, связанных с `BNEstimator`.
 
-[//]: # (todo: replace to user-guide)
-Read more in [User Guide](../../examples/custom_estimators.md).
+[//]: # (todo: заменить на руководство пользователя)
+Подробнее читайте в [Руководстве пользователя](../../examples/custom_estimators.md).
 ::: applybn.core.estimators.estimator_factory

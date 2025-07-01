@@ -1,64 +1,64 @@
-# CausalCNNExplainer: Mathematical Background
+# CausalCNNExplainer: Математическое обоснование
 
-## Overview
-The [`CausalCNNExplainer`](../../api/explainable/cnn_filter_importance.md) implements a causal inference approach to understanding convolutional neural networks
-as described in the paper
-[Explaining Deep Learning Models using Causal Inference by T. Narendra et al.](https://arxiv.org/pdf/1811.04376).
-This module treats CNN filters as variables in a causal graph, allowing for the measurement of
-filter importance through structural equation modeling rather than traditional correlation-based approaches.
+## Обзор
+[`CausalCNNExplainer`](../../api/explainable/cnn_filter_importance.md) реализует подход на основе каузального вывода для понимания сверточных нейронных сетей,
+как описано в статье
+[Explaining Deep Learning Models using Causal Inference, T. Narendra и др.](https://arxiv.org/pdf/1811.04376).
+Этот модуль рассматривает фильтры CNN как переменные в каузальном графе, что позволяет измерять
+важность фильтров с помощью моделирования структурными уравнениями, а не традиционными подходами на основе корреляции.
 
-## Mathematical Foundation
+## Математическая основа
 
-### Causal Representation of CNN Filters
-The module represents CNN filters as nodes in a Directed Acyclic Graph (DAG),
-where edges represent causal relationships between filters in consecutive layers:
+### Каузальное представление фильтров CNN
+Модуль представляет фильтры CNN как узлы в направленном ациклическом графе (DAG),
+где ребра представляют каузальные связи между фильтрами в последовательных слоях:
 
 $$
 G = (V, E)
 $$
 
-where $V$ is the set of filters across all layers, and $E$ represents the causal connections between them.
+где $V$ — это множество фильтров по всем слоям, а $E$ представляет каузальные связи между ними.
 
-### Structural Equation Modeling
-For each filter $i$ in layer $l$, its activation $F_i^l$ is modeled as a function of
-its parent filters from the previous layer:
+### Моделирование структурными уравнениями
+Для каждого фильтра $i$ в слое $l$ его активация $F_i^l$ моделируется как функция
+его родительских фильтров из предыдущего слоя:
 
 $$F_i^l = f_i(\{F_j^{l-1} | j \in \text{parents}(i)\}) + \epsilon_i$$
 
-The module implements this using linear regression, where each filter's output is
-predicted from its parent filters' outputs:
+Модуль реализует это с помощью линейной регрессии, где выход каждого фильтра
+предсказывается на основе выходов его родительских фильтров:
 
 $$F_i^l = \beta_0 + \sum_{j \in \text{parents}(i)} \beta_j \cdot F_j^{l-1} + \epsilon_i$$
 
-### Filter Importance Calculation
-The causal importance of a filter is determined by the absolute magnitudes of its regression
-coefficients when predicting all child filters in the next layer:
+### Расчет важности фильтра
+Каузальная важность фильтра определяется абсолютными значениями его коэффициентов регрессии
+при предсказании всех дочерних фильтров в следующем слое:
 
 $$\text{Importance}(F_j^l) = \sum_{i \in \text{children}(j)} |\beta_{j \rightarrow i}|$$
 
-where $\beta_{j \rightarrow i}$ is the regression coefficient reflecting how much
-filter $j$ in layer $l$ influences filter $i$ in layer $l+1$.
+где $\beta_{j \rightarrow i}$ — это коэффициент регрессии, отражающий, насколько
+фильтр $j$ в слое $l$ влияет на фильтр $i$ в слое $l+1$.
 
-### Filter Pruning Strategy
-The module leverages these importance scores for pruning, removing filters with the lowest causal impact:
+### Стратегия прунинга фильтров
+Модуль использует эти оценки важности для прунинга, удаляя фильтры с наименьшим каузальным влиянием:
 
 $$\text{PruneSet} = \{F_j^l | \text{Importance}(F_j^l) \leq \text{threshold}_l\}$$
 
-where $\text{threshold}_l$ is determined by the desired pruning percentage.
+где $\text{threshold}_l$ определяется желаемым процентом прунинга.
 
-## Applications
+## Применения
 
-This causal approach to CNN interpretation offers:
+Этот каузальный подход к интерпретации CNN предлагает:
 
-1. **Interpretable pruning** - Removes filters based on causal impact rather than magnitude or variance
-2. **Heatmap visualization** - Shows which image regions causally affect model decisions
-3. **Filter relationships** - Provides insights into inter-filter dependencies across layers
+1. **Интерпретируемый прунинг** - удаляет фильтры на основе каузального влияния, а не величины или дисперсии
+2. **Визуализация тепловых карт** - показывает, какие области изображения каузально влияют на решения модели
+3. **Взаимосвязи фильтров** - предоставляет понимание зависимостей между фильтрами в разных слоях
 
-The method demonstrates that pruning based on causal importance
-typically preserves model accuracy better than random pruning,
-as it identifies and maintains the filters with the strongest causal influence on the network's output.
+Метод демонстрирует, что прунинг на основе каузальной важности
+обычно лучше сохраняет точность модели, чем случайный прунинг,
+поскольку он выявляет и сохраняет фильтры с самым сильным каузальным влиянием на выход сети.
 
-## Example
+## Пример
 
 ``` py title="examples/explainable/cnn_filter_importance.py"
 --8<-- "examples/explainable/cnn_filter_importance.py"

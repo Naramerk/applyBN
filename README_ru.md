@@ -44,14 +44,35 @@ applybn — это многоцелевой фреймворк с открыты
 ### 5. **Совместимость со Scikit-learn**
 Все оценщики и преобразователи данных совместимы со scikit-learn.
 
+## Технические требования
+
+OS: Linux/MacOS
+Python version: 3.11/3.12
+
+Требования к железу аналогичны требованиям Pytorch в зависимости от использования GPU/CPU/MPS.
+
 ## Установка
 
 Чтобы начать работу с applybn, клонируйте репозиторий и установите необходимые зависимости.
 
+1. Установите менеджер пакетов [uv](https://github.com/astral-sh/uv)
+
+```bash
+# On macOS and Linux.
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+# On Windows.
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+2. Клонируйте репозиторий и установите зависимости с помощью uv
+
 ```bash
 git clone https://github.com/Anaxagor/applybn.git
 cd applybn
-poetry install
+uv pip install -r pyproject.toml
 ```
 
 ## Пример конвейера Scikit-learn

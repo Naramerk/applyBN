@@ -1,136 +1,135 @@
-# Time series anomaly detection
+# Обнаружение аномалий во временных рядах
 
-## Overview
-In `applybn` anomaly detection on time-series based on specific type of bayesian networks 
-Dynamic Bayesian Networks. They are designed to work with time-series.
+## Обзор
+В `applybn` обнаружение аномалий во временных рядах основано на особом типе байесовских сетей —
+динамических байесовских сетях. Они предназначены для работы с временными рядами.
 
-![Dynamic Bayesian Network Example](../../images/dbn.png)
+![Пример динамической байесовской сети](../../images/dbn.png)
 
-*Dynamic Bayesian Network Example. Source: [article](https://www.researchgate.net/figure/A-structure-of-dynamic-Bayesian-network_fig1_224246998)*
+*Пример динамической байесовской сети. Источник: [статья](https://www.researchgate.net/figure/A-structure-of-dynamic-Bayesian-network_fig1_224246998)*
 
-Learning of such networks is very consuming, so another approach from
-[Outlier Detection for Multivariate Time Series Using Dynamic Bayesian Networks](https://www.mdpi.com/2076-3417/11/4/1955)
-is used.
+Обучение таких сетей очень ресурсоемко, поэтому используется другой подход из статьи
+[Outlier Detection for Multivariate Time Series Using Dynamic Bayesian Networks](https://www.mdpi.com/2076-3417/11/4/1955).
 
 !!! warning
 
-    Method implemented in `applybn` deals only with discrete **MTS** (Multivariate time series), so user must proceed them with 
-    any discretization method (SAX, bin discretization, etc.).
+    Метод, реализованный в `applybn`, работает только с дискретными **MTS** (многомерными временными рядами), поэтому пользователь должен предварительно обработать их
+    любым методом дискретизации (SAX, биннинг и т.д.).
 
-## Mathematical Foundation
-### Core Structure of Dynamic Bayesian Networks
-A DBN extends a **Bayesian Network (BN)** by introducing **time** as an explicit variable. The key components are:  
+## Математическая основа
+### Основная структура динамических байесовских сетей
+ДБС расширяет **байесовскую сеть (БС)**, вводя **время** в качестве явной переменной. Ключевые компоненты:
 
-#### Time Slices
-A DBN consists of **repetitions of a base Bayesian Network** over discrete time steps ($t=0, t=1, ..., t=T$).
-Each time slice contains the same variables but with evolving probabilities.  
+#### Временные срезы
+ДБС состоит из **повторений базовой байесовской сети** на дискретных временных шагах ($t=0, t=1, ..., t=T$).
+Каждый временной срез содержит те же переменные, но с изменяющимися вероятностями.
 
-#### Intra-Slice vs. Inter-Slice Dependencies
-- **Intra-slice edges** (within a time step) model contemporaneous relationships (e.g., $X_t \rightarrow Y_t$).  
-- **Inter-slice edges** (between time steps) model temporal dependencies (e.g., $X_t \rightarrow X_{t+1}$).  
+#### Зависимости внутри и между срезами
+- **Ребра внутри среза** (в пределах одного временного шага) моделируют одновременные взаимосвязи (например, $X_t \rightarrow Y_t$).
+- **Ребра между срезами** (между временными шагами) моделируют временные зависимости (например, $X_t \rightarrow X_{t+1}$).
 
-#### 2-Time-Slice Bayesian Network (2-TBN)
-A compact representation where the full DBN is "unrolled" from a **2-slice template**.  
-Defines the transition model:  
-  - **Prior Network ($t=0$)**: Initial state distribution.  
-  - **Transition Network ($t \rightarrow t+1$)**: How variables evolve.  
+#### 2-временная байесовская сеть (2-TBN)
+Компактное представление, где полная ДБС "разворачивается" из **шаблона на 2 среза**.
+Определяет модель перехода:
+  - **Априорная сеть ($t=0$)**: начальное распределение состояний.
+  - **Сеть переходов ($t \rightarrow t+1$)**: как переменные развиваются.
 
 ---
 
-### Key Assumptions in DBNs
-#### Markov Assumption
-- The future is independent of the past given the present:
+### Ключевые допущения в ДБС
+#### Марковское допущение
+- Будущее независимо от прошлого при заданном настоящем:
   \( P(X_{t+1} | X_t, X_{t-1}, ..., X_0) = P(X_{t+1} | X_t) \)
 
-- Higher-order dependencies can be modeled by increasing the Markov order.  
+- Зависимости более высокого порядка могут быть смоделированы путем увеличения порядка Маркова.
 
-#### Stationarity (Time-Invariance)
-- The transition probabilities ($P(X_{t+1}|X_t)$) do not change over time.  
+#### Стационарность (инвариантность во времени)
+- Вероятности перехода ($P(X_{t+1}|X_t)$) не изменяются со временем.
 
-#### Factored State Representation
-- The system state is represented by multiple variables (e.g., $X_t, Y_t, Z_t$), each with its own dynamics.  
+#### Факторизованное представление состояния
+- Состояние системы представлено несколькими переменными (например, $X_t, Y_t, Z_t$), каждая со своей собственной динамикой.
 
-### Learning DBNs
-#### Parameter Learning
-Given a fixed structure, learn **CPTs** (Conditional Probability Tables) from data.  
-Methods:  
+### Обучение ДБС
+#### Обучение параметров
+При заданной структуре обучаются **CPT** (таблицы условных вероятностей) по данным.
+Методы:
 
-  - Maximum Likelihood Estimation (MLE)
-  - Bayesian Parameter Estimation (with Dirichlet priors)  
+  - Оценка максимального правдоподобия (MLE)
+  - Байесовская оценка параметров (с априорными распределениями Дирихле)
 
-#### Structure Learning
-Learn both the **inter-slice** and **intra-slice** dependencies.  
-Methods:  
+#### Обучение структуре
+Обучаются как **межсрезовые**, так и **внутрисрезовые** зависимости.
+Методы:
 
-  - Score-based (BIC, AIC) 
-  - Constraint-based (PC algorithm adapted for time)
+  - На основе оценок (BIC, AIC)
+  - На основе ограничений (алгоритм PC, адаптированный для времени)
 
-#### Method in `applybn`
-`applybn` implements different approach to structure learning. Instead of expensive computations, it utilizes 
-algorithms for searching [minimum weight spanning tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree).
+#### Метод в `applybn`
+`applybn` реализует другой подход к обучению структуры. Вместо дорогостоящих вычислений он использует
+алгоритмы для поиска [минимального остовного дерева](https://ru.wikipedia.org/wiki/Минимальное_остовное_дерево).
 
-It is defined as follows: 
-> A minimum spanning tree (MST) or minimum weight spanning tree is a subset of the edges of a connected, 
-> edge-weighted undirected graph that connects all the vertices together, 
-> **without any cycles** and with the minimum possible total edge weight.
-> -- <cite>Wikipedia</cite>
+Оно определяется следующим образом:
+> Минимальное остовное дерево (MST) или минимальное весовое остовное дерево — это подмножество ребер связного,
+> взвешенного по ребрам неориентированного графа, которое соединяет все вершины вместе,
+> **без циклов** и с минимально возможным общим весом ребер.
+> -- <cite>Википедия</cite>
 
 !!! warning
 
-    For any bayesian network there are strict acyclicity constraint. If bayesian network has cycles, 
-    definety something went wrong. 
+    Для любой байесовской сети существует строгое ограничение ацикличности. Если в байесовской сети есть циклы,
+    определенно что-то пошло не так.
 
-This algorithm contains these steps:
+Этот алгоритм состоит из следующих шагов:
 
-1. Build complete graph of $m$ markov lag, bayesian networks in intra-slices are dense as well.
-2. Computes weights for each edge with local LL, a quantity that measures how well the node's 
-   conditional probability distribution fits the observed data, given its parents.
+1. Построить полный граф с марковским лагом $m$, байесовские сети внутри срезов также являются полными.
+2. Вычислить веса для каждого ребра с помощью локального LL, величины, которая измеряет, насколько хорошо
+   условное вероятностное распределение узла соответствует наблюдаемым данным, при заданных его родителях.
 
-   **Initial time slice (\( t=0 \))** (same as static BN).
+   **Начальный временной срез (\( t=0 \))** (так же, как в статической БС).
 
    \(\mathcal{L}_X^{(0)}(\theta_X | \mathcal{D}) = \sum_{i=1}^{N} \log P(X_0 = x_0^{(i)} | \text{Pa}(X_0) = \text{pa}_0^{(i)}, \theta_X)\)
 
-   **Transition slices (\( t \geq 1 \))**. The log-likelihood for a node \( X \) at time \( t+1 \) depends on its parents at time \( t \).
+   **Срезы переходов (\( t \geq 1 \))**. Логарифмическое правдоподобие для узла \( X \) в момент времени \( t+1 \) зависит от его родителей в момент времени \( t \).
 
 \(
 \mathcal{L}_X^{\text{trans}}(\theta_X | \mathcal{D}) = \sum_{t=0}^{T-1} \sum_{i=1}^{N} \log P(X_{t+1} = x_{t+1}^{(i)} | \text{Pa}(X_{t+1}) = \text{pa}_{t+1}^{(i)}, \theta_X)
 \)
 
-where:
+где:
 
-- \( T \) - total time steps,
-- $\mathcal{D}$ - dataset
-- \( \text{Pa}(X_{t+1}) \) may include both **intra-slice** and **inter-slice** parents.
-- $\theta_x$ - parameters of conditional distribution.
+- \( T \) - общее количество временных шагов,
+- $\mathcal{D}$ - набор данных
+- \( \text{Pa}(X_{t+1}) \) может включать как **внутрисрезовых**, так и **межсрезовых** родителей.
+- $\theta_x$ - параметры условного распределения.
 
-The parents were taken as:
->  <...> up to p parents from the previous m time
-slices and the best parent from time slice t. 
+Родители были взяты как:
+> <...> до p родителей из предыдущих m временных
+> срезов и лучший родитель из временного среза t.
 
-Please notice that parents are taken as they appear in maximum branching algorithm.
+Обратите внимание, что родители берутся в том порядке, в котором они появляются в алгоритме максимального ветвления.
 
-After obtaining dense graph maximum branching algorithm is applied, and the result is structure for DBN.
+После получения полного графа применяется алгоритм максимального ветвления, и результатом является структура для ДБС.
 
-For parameters estimation MLE is used.
+Для оценки параметров используется MLE.
 
-## Anomaly detection with tDBN
-There are several ways to detect anomalies from scores. Consider a dataset with shape (1000, 56) and 
-a score matrix with size (10, 1000), 
-where 10 is a number of transition and 1000 number of subjects. For each transition there are a measures of 
-abnormality (e.g. first element contains abnormality in transition from $X$ tp $X_{t + 1}$).
+## Обнаружение аномалий с помощью tDBN
+Существует несколько способов обнаружения аномалий по оценкам. Рассмотрим набор данных с формой (1000, 56) и
+матрицу оценок размером (10, 1000),
+где 10 — это количество переходов, а 1000 — количество субъектов. Для каждого перехода есть мера
+аномальности (например, первый элемент содержит аномальность в переходе от $X$ к $X_{t + 1}$).
 
-These scores can be thresholded by `abs_threshold` and `rel_threshold`. The former create a binary matrix with
-shape (10, 1000).Then the `rel_threshold` (a number between 0 and 1) shows how many times a subject show anomaly 
-behaviour and from which fraction anomaly is considered.
+Эти оценки могут быть пороговыми с помощью `abs_threshold` и `rel_threshold`. Первый создает бинарную матрицу с
+формой (10, 1000). Затем `rel_threshold` (число от 0 до 1) показывает, сколько раз субъект демонстрировал аномальное
+поведение, и с какой доли считается аномалия.
 
 !!! note
 
-    You can increase sensivity by increasing `rel_threshold` and decreasing `abs_threshold`.
+    Вы можете увеличить чувствительность, увеличив `rel_threshold` и уменьшив `abs_threshold`.
 
 
-## Data format specification
-In order to use [`FastTimeSeriesDetector`](../../api/anomaly_detection/ts_anomaly_detection.md) your data must have 
-the following format:
+## Спецификация формата данных
+Чтобы использовать [`FastTimeSeriesDetector`](../../api/anomaly_detection/ts_anomaly_detection.md), ваши данные должны иметь
+следующий формат:
 
 ```
     subject_id f1__0  f2__0  f1__1  f2__1
@@ -138,12 +137,12 @@ the following format:
         1        1      11     2      12
 ```
 
-where 
+где
 
-- subject_id is a distinct subject (can be sensors, people etc.). 
-- Each column is a feature a time slice named feature_name__index (`__` presence is mandatory!).
+- subject_id — это отдельный субъект (могут быть датчики, люди и т.д.).
+- Каждый столбец — это признак временного среза с именем feature_name__index (`__` обязательно!).
 
-### Example
+### Пример
 
 ``` py title="examples/anomaly_detection/time_series.py"
 --8<-- "examples/anomaly_detection/time_series.py"

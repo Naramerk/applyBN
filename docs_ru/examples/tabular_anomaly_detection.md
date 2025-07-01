@@ -1,13 +1,13 @@
-# Tabular anomaly detection
+# Обнаружение аномалий в табличных данных
 
-This example demonstrates how different preprocessing techniques affect
-the performance of various outlier detection algorithms, with evaluation
-using both classification reports and ROC-AUC metrics.
+Этот пример демонстрирует, как различные методы предварительной обработки влияют на
+производительность различных алгоритмов обнаружения выбросов, с оценкой
+с использованием как отчетов о классификации, так и метрик ROC-AUC.
 
-In general case you can follow this [guide](https://scikit-learn.org/stable/auto_examples/preprocessing/plot_all_scaling.html). 
-But sometimes the result can be different due to model specification.
+В общем случае вы можете следовать этому [руководству](https://scikit-learn.org/stable/auto_examples/preprocessing/plot_all_scaling.html).
+Но иногда результат может отличаться из-за специфики модели.
 
-## Set up
+## Настройка
 ```python
 from tabulate import tabulate
 
@@ -23,13 +23,13 @@ from sklearn.model_selection import train_test_split
 from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
 ```
 
-## Step 1. Load data and define required variables
+## Шаг 1. Загрузка данных и определение необходимых переменных
 ```python
 data = pd.read_csv("../../applybn/anomaly_detection/data/tabular/ecoli.csv")
 X = data.drop(columns=['y'])
 y = data['y']
 
-# Define preprocessing methods
+# Определение методов предварительной обработки
 preprocessors = {
     'No preprocessing': None,
     'StandardScaler': StandardScaler(),
@@ -37,7 +37,7 @@ preprocessors = {
     'PowerTransformer': PowerTransformer(method='yeo-johnson')
 }
 
-# Define outlier detection methods
+# Определение методов обнаружения выбросов
 detectors = {
     'IQR-based': TabularDetector(target_name='y', model_estimation_method='iqr'),
     'Isolation Forest': TabularDetector(target_name='y', additional_score='IF'),
@@ -45,8 +45,8 @@ detectors = {
 }
 ```
 
-## Step 2. Train-test split
-Don't forget to stratify to avoid samples disbalance!
+## Шаг 2. Разделение на обучающую и тестовую выборки
+Не забудьте использовать стратификацию, чтобы избежать дисбаланса выборок!
 
 ```python
 X_train, X_test, y_train, y_test = train_test_split(
@@ -54,7 +54,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-## Step 3. Comparison
+## Шаг 3. Сравнение
 ```python
 results = []
 
@@ -66,7 +66,7 @@ for preproc_name, preprocessor in preprocessors.items():
         X_train_processed = X_train.values
         X_test_processed = X_test.values
 
-    # Create dataframes for the detector
+    # Создание датафреймов для детектора
     train_df = pd.DataFrame(X_train_processed, columns=X.columns)
     train_df['y'] = y_train.values
     test_df = pd.DataFrame(X_test_processed, columns=X.columns)
@@ -75,7 +75,7 @@ for preproc_name, preprocessor in preprocessors.items():
     for det_name, detector in detectors.items():
         print(f"\n=== {preproc_name} + {det_name} ===")
 
-        # Train and predict
+        # Обучение и предсказание
         detector.fit(train_df)
         try:
             preds = detector.predict(test_df)
@@ -85,15 +85,15 @@ for preproc_name, preprocessor in preprocessors.items():
 
         scores = detector.decision_function(test_df) if hasattr(detector, 'decision_function') else None
 
-        # Get classification report
+        # Получение отчета о классификации
         report = classification_report(y_test, preds, output_dict=True)
         f1 = report['1']['f1-score']
 
-        # Calculate ROC-AUC if scores are available
+        # Расчет ROC-AUC, если доступны оценки
 
         roc_auc = roc_auc_score(y_test, scores)
 
-        # Store results
+        # Сохранение результатов
         results.append({
             'Preprocessor': preproc_name,
             'Detector': det_name,
@@ -103,7 +103,7 @@ for preproc_name, preprocessor in preprocessors.items():
 ```
 
 
-## Display results table
+## Отображение таблицы результатов
 ```python
 results_df = pd.DataFrame(results)
 

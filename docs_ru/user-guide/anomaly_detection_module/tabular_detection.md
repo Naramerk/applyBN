@@ -1,64 +1,64 @@
-# Tabular anomaly detection
+# Обнаружение аномалий в табличных данных
 
-## Overview
+## Обзор
 
-Tabular anomaly detection in `applybn` implements unsupervised outlier detection by estimating scores. 
-Scores are managed by [TabularDetector](../../api/anomaly_detection/tabular_anomaly_detector.md) object.
-The basis of this algorithm was taken 
-from ["Effective Outlier Detection based on Bayesian Network and Proximity"](https://ieeexplore.ieee.org/document/8622230). 
+Обнаружение аномалий в табличных данных в `applybn` реализует неконтролируемое обнаружение выбросов путем оценки баллов.
+Баллы управляются объектом [TabularDetector](../../api/anomaly_detection/tabular_anomaly_detector.md).
+Основа этого алгоритма была взята
+из ["Effective Outlier Detection based on Bayesian Network and Proximity"](https://ieeexplore.ieee.org/document/8622230).
 
-`applybn` contains a several novel modification of this the algorithm such as different scores, 
-mitigation of normality limitations, dealing with mixed data.
+`applybn` содержит несколько новых модификаций этого алгоритма, таких как различные баллы,
+смягчение ограничений нормальности, работа со смешанными данными.
 
-The list of changes:
+Список изменений:
 
-- Added support for mixed data
-- Added several new methods such as IQR, Cond Ratio Probability that based on arbitrary bayesian network.
+- Добавлена поддержка смешанных данных
+- Добавлено несколько новых методов, таких как IQR, Cond Ratio Probability, основанных на произвольной байесовской сети.
 
-Please consider this table when choosing appropriate algorithm:
+Пожалуйста, учитывайте эту таблицу при выборе подходящего алгоритма:
 
-| Data type  | Allowed methods                                   |
-|------------|---------------------------------------------------|
-| Continuous | `iqr`, `original_modified`                        |
-| Discrete   | `cond_ratio`, `original_modified`                 |
-| Mixed      | `cond_ratio + iqr (default)`, `original_modified` |
+| Тип данных  | Разрешенные методы                                   |
+|-------------|---------------------------------------------------|
+| Непрерывные | `iqr`, `original_modified`                        |
+| Дискретные  | `cond_ratio`, `original_modified`                 |
+| Смешанные   | `cond_ratio + iqr (по умолчанию)`, `original_modified` |
 
-## Mathematical Foundation
+## Математическая основа
 
-### Original Method 
+### Исходный метод
 
-The original method uses **Bayesian Networks with proximity-based enhancement** for outlier detection.
+Исходный метод использует **байесовские сети с улучшением на основе близости** для обнаружения выбросов.
 
-##### Bayesian Network Modeling
+##### Моделирование байесовской сети
 
-Given a dataset \( \mathcal{D} = \{\mathbf{x}^{(1)}, \dots, \mathbf{x}^{(N)}\} \), 
-where each row \( \mathbf{x}^{(j)} = (x_1^{(j)}, x_2^{(j)}, \dots, x_n^{(j)}) \), 
-the authors first **learn the Bayesian Network** structure and parameters:
+Для набора данных \( \mathcal{D} = \{\mathbf{x}^{(1)}, \dots, \mathbf{x}^{(N)}\} \),
+где каждая строка \( \mathbf{x}^{(j)} = (x_1^{(j)}, x_2^{(j)}, \dots, x_n^{(j)}) \),
+авторы сначала **обучают структуру и параметры байесовской сети**:
 
-- Structure: DAG \( G \) where each node \( X_i \) has parent set \( \text{Pa}(X_i) \)
-- Parameters: CPDs for each \( X_i \mid \text{Pa}(X_i) \), usually Gaussian if variables are continuous.
+- Структура: DAG \( G \), где каждый узел \( X_i \) имеет набор родителей \( \text{Pa}(X_i) \)
+- Параметры: УРВ для каждого \( X_i \mid \text{Pa}(X_i) \), обычно гауссовы, если переменные непрерывны.
 
-##### Likelihood-Based Row Evaluation
+##### Оценка строк на основе правдоподобия
 
-Once the network is trained, the likelihood of each row \( \mathbf{x} \) is evaluated as:
+После обучения сети правдоподобие каждой строки \( \mathbf{x} \) оценивается как:
 
 \[
 P(\mathbf{x}) = \prod_{i=1}^{n} P(x_i \mid \text{Pa}_i(\mathbf{x}))
 \]
 
-Where \( \text{Pa}_i(\mathbf{x}) \) are the values of \( \text{Pa}(X_i) \) in the same row.
+Где \( \text{Pa}_i(\mathbf{x}) \) — это значения \( \text{Pa}(X_i) \) в той же строке.
 
-##### Scoring Rows
+##### Оценка строк
 
-They compute an **anomaly score** as follows.
+Они вычисляют **балл аномалии** следующим образом.
 
-If the CPDs are Gaussian:
+Если УРВ являются гауссовыми:
 
 \[
 P(x_i \mid \text{Pa}_i(\mathbf{x})) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left( -\frac{(x_i - \mu_i(\text{Pa}_i))^2}{2\sigma_i^2} \right)
 \]
 
-So the score becomes:
+Тогда балл становится:
 
 \[
 S_{\text{BN}}(\mathbf{x}) = \sum_{i=1}^{n} \frac{(x_i - \mu_i(\text{Pa}_i(\mathbf{x})))^2}{2\sigma_i^2}
@@ -66,64 +66,64 @@ S_{\text{BN}}(\mathbf{x}) = \sum_{i=1}^{n} \frac{(x_i - \mu_i(\text{Pa}_i(\mathb
 
 ---
 
-##### Proximity-Based Enhancement
+##### Улучшение на основе близости
 
-To improve the detection (especially for local anomalies), they add a **proximity-based score**.
-They define a **combined anomaly score** like:
+Для улучшения обнаружения (особенно для локальных аномалий) они добавляют **балл на основе близости**.
+Они определяют **комбинированный балл аномалии** как:
 
 \[
 S_{\text{Total}}(\mathbf{x}) = S_{\text{BN}}(\mathbf{x}) + S_{\text{prox}}(\mathbf{x})
 \]
 
-Where \( S_{prox}(x) \) is negative factors from LOF.
+Где \( S_{prox}(x) \) — это отрицательные факторы из LOF.
 
 ---
 
-### Original modified method
+### Исходный модифицированный метод
 
-Given a set of variables \( X = \{X_1, X_2, \dots, X_n\} \), a Bayesian Network defines the joint distribution as:
+Для набора переменных \( X = \{X_1, X_2, \dots, X_n\} \) байесовская сеть определяет совместное распределение как:
 
 \[
 P(X) = \prod_{i=1}^{n} P(X_i \mid \text{Pa}(X_i))
 \]
 
-Where:
+Где:
 
-- \( \text{Pa}(X_i) \) denotes the parents of node \( X_i \) in the DAG.
-- Each \( P(X_i \mid \text{Pa}(X_i)) \) is a **Conditional Probability Distribution (CPD)**.
+- \( \text{Pa}(X_i) \) обозначает родителей узла \( X_i \) в DAG.
+- Каждое \( P(X_i \mid \text{Pa}(X_i)) \) — это **условное распределение вероятностей (УРВ)**.
 
-Let:
+Пусть:
 
 - \( \mathcal{D} = \{\mathbf{x}^{(1)}, \dots, \mathbf{x}^{(N)}\} \)
-- \( \text{pa}_i^{(j)} = \text{pa}_i(\mathbf{x}^{(j)}) \), the parent values of \( X_i \) in row \( j \)
+- \( \text{pa}_i^{(j)} = \text{pa}_i(\mathbf{x}^{(j)}) \), значения родителей \( X_i \) в строке \( j \)
 
-Then the **local score** for node \( X_i \) in row \( j \) is:
+Тогда **локальный балл** для узла \( X_i \) в строке \( j \) равен:
 
 \[
 s_i^{(j)} = \text{Score}(x_i^{(j)} \mid \text{pa}_i^{(j)})
 \]
 
-This score is computed by comparing \( x_i^{(j)} \) to **other values of \( X_i \)** that share similar parent values \( \text{pa}_i^{(j)} \). You can express this using a conditional group:
+Этот балл вычисляется путем сравнения \( x_i^{(j)} \) с **другими значениями \( X_i \)**, которые имеют схожие значения родителей \( \text{pa}_i^{(j)} \). Это можно выразить с помощью условной группы:
 
 \[
 s_i^{(j)} = \phi \left( x_i^{(j)}, \{ x_i^{(k)} \mid \text{pa}_i^{(k)} = \text{pa}_i^{(j)} \} \right)
 \]
 
-Where \( \phi \) is a comparing scoring function.
+Где \( \phi \) — это функция сравнения для оценки.
 
 ---
 
-### IQR (Interquartile range) method
+### Метод IQR (межквартильный размах)
 
-For a given row \( j \):
+Для данной строки \( j \):
 
 - \( y = x_i^{(j)} \)
-- Conditional set:
+- Условное множество:
   \(
   \mathcal{C}_i^{(j)} = \{ x_i^{(k)} \mid \text{pa}_i^{(k)} = \text{pa}_i^{(j)} \}
   \)
 
-- IQR bounds for node \( i \) under parent configuration \( \text{pa}_i^{(j)} \):
+- Границы IQR для узла \( i \) при конфигурации родителей \( \text{pa}_i^{(j)} \):
   \(
   Q_1 = \text{Quantile}_{25\%}(\mathcal{C}_i^{(j)}), \quad Q_3 = \text{Quantile}_{75\%}(\mathcal{C}_i^{(j)})
   \)
@@ -131,78 +131,78 @@ For a given row \( j \):
 - IQR:
   \(
   \text{IQR}_i^{(j)} = \alpha \cdot (Q_3 - Q_1)
-  \), where $\alpha$ is hyperparameter
+  \), где $\alpha$ — гиперпараметр
 
-- Bounds:
+- Границы:
   \(
   \text{Lower}_i^{(j)} = Q_1, \quad \text{Upper}_i^{(j)} = Q_3
   \)
 
-- Reference distances:
+- Референсные расстояния:
   \(
   d_{\min} = \min(\mathcal{C}_i^{(j)}), \quad d_{\max} = \max(\mathcal{C}_i^{(j)})
   \)
 
 ---
 
-### IQR-Based Score Function
+### Функция оценки на основе IQR
 
-Now define the node score \( s_i^{(j)} \) as:
+Теперь определим балл узла \( s_i^{(j)} \) как:
 
 \[
 s_i^{(j)} =
 \begin{cases}
-0, & \text{if } \text{Lower}_i^{(j)} < x_i^{(j)} \leq \text{Upper}_i^{(j)} \\[6pt]
-\min\left(1, \dfrac{|x_i^{(j)} - c|}{|d|} \right), & \text{otherwise}
+0, & \text{если } \text{Lower}_i^{(j)} < x_i^{(j)} \leq \text{Upper}_i^{(j)} \\[6pt]
+\min\left(1, \dfrac{|x_i^{(j)} - c|}{|d|} \right), & \text{иначе}
 \end{cases}
 \]
 
-Where:
+Где:
 
 - \( c = \arg\min_{b \in \{\text{Lower}_i^{(j)}, \text{Upper}_i^{(j)}\}} |x_i^{(j)} - b| \)
 - \( d = \begin{cases}
-d_{\max}, & \text{if } c = \text{Upper}_i^{(j)} \\
-d_{\min}, & \text{if } c = \text{Lower}_i^{(j)} \\
+d_{\max}, & \text{если } c = \text{Upper}_i^{(j)} \\
+d_{\min}, & \text{если } c = \text{Lower}_i^{(j)} \\
 \end{cases} \)
 
 ---
 
-### Conditional Ratio Probability
-Scores based on how **unexpected** a value is under its conditional distribution compared to the marginal distribution.
+### Вероятность условного отношения
+Баллы, основанные на том, насколько **неожиданным** является значение при его условном распределении по сравнению с маржинальным распределением.
 
-Let:
+Пусть:
 
-- \( X_i \) be the node, and \( x_i^{(j)} \) its value in row \( j \)
-- \( \text{pa}_i^{(j)} \) be the parent configuration for that row
-- \( \mathcal{D} \) be the dataset
+- \( X_i \) — узел, а \( x_i^{(j)} \) — его значение в строке \( j \)
+- \( \text{pa}_i^{(j)} \) — конфигурация родителей для этой строки
+- \( \mathcal{D} \) — набор данных
 
-We define:
+Мы определяем:
 
-- **Marginal probability** of value \( x_i^{(j)} \):
+- **Маржинальная вероятность** значения \( x_i^{(j)} \):
 
 \[
 P(x_i^{(j)}) = \frac{\#(x_i = x_i^{(j)})}{N}
 \]
 
-- **Conditional probability** of value given parents:
+- **Условная вероятность** значения при заданных родителях:
 
 \[
 P(x_i^{(j)} \mid \text{pa}_i^{(j)}) = \frac{\#(x_i = x_i^{(j)} \land \text{pa}_i = \text{pa}_i^{(j)})}{\#(\text{pa}_i = \text{pa}_i^{(j)})}
 \]
 
-Now the local score for node \( X_i \) and row \( j \) is:
+Теперь локальный балл для узла \( X_i \) и строки \( j \) равен:
 
 \[
 s_i^{(j)} =
 \begin{cases}
-\text{NaN}, & \text{if } \frac{P(x_i^{(j)})}{P(x_i^{(j)} \mid \text{pa}_i^{(j)})} \notin \mathbb{R} \\
-\min\left(1, \frac{P(x_i^{(j)})}{P(x_i^{(j)} \mid \text{pa}_i^{(j)})} \right), & \text{otherwise}
+\text{NaN}, & \text{если } \frac{P(x_i^{(j)})}{P(x_i^{(j)} \mid \text{pa}_i^{(j)})} \notin \mathbb{R} \\
+\min\left(1, \frac{P(x_i^{(j)})}{P(x_i^{(j)} \mid \text{pa}_i^{(j)})} \right), & \text{иначе}
 \end{cases}
 \]
 
-This score measures how **surprising** a value is given its context in the network — higher values imply **less expected** behavior conditionally.
+Этот балл измеряет, насколько **удивительным** является значение, учитывая его контекст в сети — более высокие значения подразумевают **менее ожидаемое** поведение условно.
 
-## Example
+## Пример
 
 ``` py title="examples/anomaly_detection/tabular.py"
 --8<-- "examples/anomaly_detection/tabular.py"

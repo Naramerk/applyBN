@@ -1,68 +1,68 @@
-# How to contribute
+# Как внести свой вклад
 
-## Fast Checklist
+## Быстрый чек-лист
 
-- [ ] Fork the repository
-- [ ] Clone the repository
-- [ ] Create a new branch
-- [ ] Ensure sklearn compatibility
-- [ ] Write or update documentation with usage examples
-- [ ] Check documentation with serve
-- [ ] Write unittests
-- [ ] Run tests to ensure everything works
-- [ ] Commit your changes
-- [ ] Push your branch
-- [ ] Open a pull request
+- [ ] Сделать форк репозитория
+- [ ] Клонировать репозиторий
+- [ ] Создать новую ветку
+- [ ] Обеспечить совместимость со sklearn
+- [ ] Написать или обновить документацию с примерами использования
+- [ ] Проверить документацию с помощью serve
+- [ ] Написать юнит-тесты
+- [ ] Запустить тесты, чтобы убедиться, что все работает
+- [ ] Закоммитить свои изменения
+- [ ] Отправить свою ветку
+- [ ] Открыть pull request
 
-## Contribution Guide
+## Руководство по участию
 
-We welcome contributions to the project. To contribute, please follow these steps:
+Мы приветствуем вклад в проект. Чтобы внести свой вклад, пожалуйста, следуйте этим шагам:
 
-1. **Cloning the repository**
-    - Fork the repository to your GitHub account.
-    - Clone your forked repository to your local machine using the following command:
+1. **Клонирование репозитория**
+    - Сделайте форк репозитория в свой аккаунт на GitHub.
+    - Клонируйте свой форкнутый репозиторий на локальную машину с помощью следующей команды:
       ```bash
       git clone https://github.com/Anaxagor/applyBN.git
       ```
-    - Navigate to the project directory:
+    - Перейдите в директорию проекта:
       ```bash
       cd applyBN
       ```
 
-2. **Creating a branch**
-    - Create a new branch for your feature or bug fix:
+2. **Создание ветки**
+    - Создайте новую ветку для вашей фичи или исправления бага:
       ```bash
-      git checkout -b your-branch-name
+      git checkout -b ваше-имя-ветки
       ```
 
-3. **Keeping everything sklearn-compatible**
-    - Ensure that your contributions are compatible with `scikit-learn` where applicable. This includes following their conventions, inheriting their classes and ensuring interoperability.
+3. **Поддержание совместимости со sklearn**
+    - Убедитесь, что ваши изменения совместимы с `scikit-learn`, где это применимо. Это включает в себя соблюдение их конвенций, наследование их классов и обеспечение совместимости.
 
-4. **Writing documentation with usage example**
-    - We use `mkdocs` for documentation. Add or update documentation in the `docs` directory.
-    - Include usage examples to demonstrate how to use your feature or changes.
-    - To preview the documentation locally, run:
+4. **Написание документации с примером использования**
+    - Мы используем `mkdocs` для документации. Добавьте или обновите документацию в директории `docs`.
+    - Включите примеры использования, чтобы продемонстрировать, как использовать вашу фичу или изменения.
+    - Для предварительного просмотра документации локально выполните:
       ```bash
       mkdocs serve
       ```
 
-5. **Writing unittests**
-    - Write unittests for your code to ensure its correctness.
-    - Place your tests in the `tests` directory.
-    - Run the tests to make sure everything works:
+5. **Написание юнит-тестов**
+    - Напишите юнит-тесты для вашего кода, чтобы обеспечить его корректность.
+    - Разместите ваши тесты в директории `tests`.
+    - Запустите тесты, чтобы убедиться, что все работает:
       ```bash
       pytest -s tests
       ```
 
-6. **Submitting your changes**
-    - Commit your changes with a descriptive commit message:
+6. **Отправка ваших изменений**
+    - Закоммитьте свои изменения с описательным сообщением коммита:
       ```bash
-      git commit -m "Description of your changes"
+      git commit -m "Описание ваших изменений"
       ```
-    - Push your branch to your forked repository:
+    - Отправьте свою ветку в ваш форкнутый репозиторий:
       ```bash
-      git push origin your-branch-name
+      git push origin ваше-имя-ветки
       ```
-    - Open a pull request on the original repository and provide a detailed description of your changes.
+    - Откройте pull request в оригинальном репозитории и предоставьте подробное описание ваших изменений.
 
-Thank you for your contributions!
+Спасибо за ваш вклад!

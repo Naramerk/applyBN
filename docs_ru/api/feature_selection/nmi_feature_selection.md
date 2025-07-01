@@ -1,11 +1,11 @@
-# NMIFeatureSelector: Feature Selection via Normalized Mutual Information
+# NMIFeatureSelector: отбор признаков с помощью нормализованной взаимной информации
 
-[User Guide reference](../../user-guide/feature_selection/nmi_feature_selection.md)
+[Ссылка на руководство пользователя](../../user-guide/feature_selection/nmi_feature_selection.md)
 
 ::: applybn.feature_selection.bn_nmi_feature_selector.NMIFeatureSelector
 
 
-# Example
+# Пример
 
 ```python
 from applybn.feature_selection.bn_nmi_feature_selector import NMIFeatureSelector
