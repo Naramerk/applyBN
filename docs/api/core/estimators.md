@@ -1,9 +1,9 @@
-# Estimators
+# Оценщики
 
-This module contains estimators. Essentially this is a wrapping on bamt networks with additional constraints.
-Please use this module **only if you are a developer** since this low-level one, otherwise use desired interfaces
-(e.g. Pipelines, Explainers etc.).
+Этот модуль содержит оценщики. По сути, это обертка над сетями `bamt` с дополнительными ограничениями.
+Пожалуйста, используйте этот модуль, **только если вы являетесь разработчиком**, так как он низкоуровневый. В противном случае используйте предназначенные для этого интерфейсы
+(например, конвейеры, объяснители и т.д.).
 
-[//]: # (todo: replace to user-guide)
-Read more in [User Guide](../../examples/custom_estimators.md).
+[//]: # (todo: заменить на руководство пользователя)
+Подробнее читайте в [Руководстве пользователя](../../examples/custom_estimators.md).
 ::: applybn.core.estimators.base_estimator

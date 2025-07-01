@@ -1,44 +1,44 @@
-# Bayesian (Belief) Networks
+# Байесовские сети (сети доверия)
 
-**Bayesian Networks** (also known as **Bayes Nets** or **Belief Networks**) are probabilistic graphical models 
-that represent a collection of random variables and their conditional dependencies using a **directed acyclic graph** (DAG).
-In these graphs, each **node** corresponds to a random variable, and each **edge** represents a direct probabilistic dependency.
+**Байесовские сети** (также известные как **сети Байеса** или **сети доверия**) — это вероятностные графические модели,
+которые представляют совокупность случайных величин и их условных зависимостей с помощью **направленного ациклического графа** (DAG).
+В этих графах каждый **узел** соответствует случайной величине, а каждое **ребро** представляет прямую вероятностную зависимость.
 
-These networks provide a compact and intuitive way to encode joint probability distributions. 
-Rather than modeling the full joint distribution explicitly, which becomes intractable as the number of variables grows, 
-Bayesian Networks break it down using the **chain rule of probability** and the **conditional independencies** encoded
-in the graph. This makes them particularly well-suited for reasoning under uncertainty, performing inference, 
-and making decisions based on incomplete or noisy data.
+Эти сети предоставляют компактный и интуитивно понятный способ кодирования совместных распределений вероятностей.
+Вместо явного моделирования полного совместного распределения, что становится невозможным с ростом числа переменных,
+байесовские сети разбивают его, используя **цепное правило вероятности** и **условные независимости**, закодированные
+в графе. Это делает их особенно подходящими для рассуждений в условиях неопределенности, выполнения логического вывода
+и принятия решений на основе неполных или зашумленных данных.
 
-At the heart of a Bayesian Network are two components:
+В основе байесовской сети лежат два компонента:
 
-1. **Structure** – the graph itself, which defines the dependencies among variables.
-2. **Parameters** – the **conditional probability distributions (CPDs)** associated with each node, given its parents.
+1. **Структура** – сам граф, который определяет зависимости между переменными.
+2. **Параметры** – **условные распределения вероятностей (УРВ)**, связанные с каждым узлом, при заданных его родителях.
 
-While the structure tells us *which variables influence each other*, 
-the parameters quantify *how strong those influences are*. 
-Together, they fully specify the joint distribution over the variables.
+В то время как структура говорит нам, *какие переменные влияют друг на друга*,
+параметры количественно определяют, *насколько сильны эти влияния*.
+Вместе они полностью определяют совместное распределение по переменным.
 
 ---
 
-# Learning in Bayesian Networks
+# Обучение в байесовских сетях
 
-When constructing Bayesian Networks from data, there are two fundamental tasks:
+При построении байесовских сетей по данным существуют две основные задачи:
 
-- **Structure Learning**: 
-Discovering the optimal graph structure that captures the dependencies among variables. 
-This is often a combinatorially hard problem, especially for large datasets, 
-as it involves searching through the space of all possible DAGs.
-  
-- **Parameter Learning**: 
-Estimating the CPDs for each node given the structure. 
-If the structure is known and data is complete, this step is relatively straightforward and 
-can be done using maximum likelihood estimation or Bayesian estimation.
+- **Обучение структуре**:
+Обнаружение оптимальной структуры графа, которая отражает зависимости между переменными.
+Это часто является комбинаторно сложной задачей, особенно для больших наборов данных,
+так как включает в себя поиск по пространству всех возможных DAG.
 
-Learning both structure and parameters from data allows Bayesian Networks to be applied in real-world domains
-where expert-designed structures are not available. 
-This makes them especially valuable in areas such as bioinformatics, medical diagnosis, and automated decision systems.
+- **Обучение параметрам**:
+Оценка УРВ для каждого узла при заданной структуре.
+Если структура известна и данные полны, этот шаг относительно прост и
+может быть выполнен с использованием оценки максимального правдоподобия или байесовской оценки.
+
+Обучение как структуры, так и параметров по данным позволяет применять байесовские сети в реальных областях,
+где структуры, разработанные экспертами, недоступны.
+Это делает их особенно ценными в таких областях, как биоинформатика, медицинская диагностика и автоматизированные системы принятия решений.
 
 !!! note
 
-    By default `bamt` (and `applybn`) will use K2 as structure scorer and maximum likelihood as parameters scorer.
+    По умолчанию `bamt` (и `applybn`) будет использовать K2 в качестве оценщика структуры и максимальное правдоподобие в качестве оценщика параметров.

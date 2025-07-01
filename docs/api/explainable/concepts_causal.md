@@ -1,7 +1,7 @@
-# Causal analysis based on concepts
+# Каузальный анализ на основе концептов
 
-[User Guide reference](../../user-guide/explainable_module/concept_explainer.md)
+[Ссылка на руководство пользователя](../../user-guide/explainable_module/concept_explainer.md)
 
 ::: applybn.explainable.causal_analysis.ConceptCausalExplainer
 
-# Example
+# Пример

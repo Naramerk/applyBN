@@ -1,33 +1,33 @@
-# tDBN Data Formatter 
+# Форматировщик данных tDBN
 
-## Overview 
-To use [`FastTimeSeriesDetector`](../../api/anomaly_detection/ts_anomaly_detection.md) 
-one may need to artificially preprocess data by cutting them into windows. Briefly this process can be described
-with this figure:
+## Обзор
+Для использования [`FastTimeSeriesDetector`](../../api/anomaly_detection/ts_anomaly_detection.md)
+может потребоваться искусственная предварительная обработка данных путем их нарезки на окна. Кратко этот процесс можно описать
+с помощью этого рисунка:
 
 ![img.png](sliding_window_and_stride.png)
 
-*Sliding window technique. Source: [article](https://www.researchgate.net/figure/Sliding-window-technique_fig2_346510102)*
+*Техника скользящего окна. Источник: [статья](https://www.researchgate.net/figure/Sliding-window-technique_fig2_346510102)*
 
 
 !!! note
 
-    Sliding windows length is `window` parameter whereas `stride` is sliding window stride.
+    Длина скользящего окна - это параметр `window`, а `stride` - это шаг скользящего окна.
 
-## Aggregation strategies
+## Стратегии агрегации
 
-After slicing it not well determined how to aggregate anomalies across subjects. 
-Only "any" strategy is implemented, that is anomaly subject is the one that has at least 1 anomaly step inside.
+После нарезки не совсем ясно, как агрегировать аномалии по субъектам.
+Реализована только стратегия "any", то есть аномальным считается субъект, у которого есть хотя бы 1 аномальный шаг внутри.
 
-## Usage
-[`TemporalDBNTransformer`](../../api/anomaly_detection/tDBN_data_formatter.md) was designed to perform such operation:
+## Использование
+[`TemporalDBNTransformer`](../../api/anomaly_detection/tDBN_data_formatter.md) был разработан для выполнения такой операции:
 
 ```python
 import numpy as np
 from applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter import TemporalDBNTransformer
 import pandas as pd
 
-from tabulate import tabulate # not installed by default
+from tabulate import tabulate # не устанавливается по умолчанию
 
 np.random.seed(51)
 
@@ -48,7 +48,7 @@ transformer = TemporalDBNTransformer(window=5, stride=2, include_label=True)
 print_df(transformer.transform(df, label))
 ```
 
-Which turns: 
+Что превращает:
 
 |    |   col1 |   col2 |   anomaly |
 |----|--------|--------|-----------|
@@ -63,7 +63,7 @@ Which turns:
 |  8 |      4 |      9 |         0 |
 |  9 |      5 |     10 |         0 |
 
-Into:
+В:
 
 |    |   subject_id |   col1__0 |   col2__0 |   col1__1 |   col2__1 |   col1__2 |   col2__2 |   col1__3 |   col2__3 |   col1__4 |   col2__4 |   anomaly |
 |----|--------------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|

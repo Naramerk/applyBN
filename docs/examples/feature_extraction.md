@@ -1,22 +1,22 @@
-## Comparative Analysis: Bayesian Network Feature Generation vs Traditional Methods
+## Сравнительный анализ: генерация признаков с помощью байесовских сетей и традиционные методы
 
-This example demonstrates the `BNFeatureGenerator`'s ability to improve model performance compared to traditional feature engineering methods like polynomial features and feature interactions.
+Этот пример демонстрирует способность `BNFeatureGenerator` улучшать производительность модели по сравнению с традиционными методами инжиниринга признаков, такими как полиномиальные признаки и взаимодействия признаков.
 
-## Step 1: Load and Preprocess Data
+## Шаг 1: Загрузка и предварительная обработка данных
 
 ```python
-# Load the Wilt dataset from local files
+# Загрузка набора данных Wilt из локальных файлов
 training_data = pd.read_csv('data/feature_extraction/wilt/training.csv')
 testing_data = pd.read_csv('data/feature_extraction/wilt/testing.csv')
 
-# Combine training and testing data for cross-validation
+# Объединение обучающих и тестовых данных для кросс-валидации
 combined_data = pd.concat([training_data, testing_data], ignore_index=True)
 
-# Separate features and target
+# Разделение признаков и цели
 X = combined_data.drop("class", axis=1) 
 y = combined_data["class"]
 
-# Create preprocessing pipeline
+# Создание конвейера предварительной обработки
 preprocessor = ColumnTransformer(
     transformers=[('scale', StandardScaler(), list(X.columns))],
     remainder='passthrough'
@@ -24,11 +24,11 @@ preprocessor = ColumnTransformer(
 preprocessor.fit(X)
 ```
 
-## Step 2: Define Feature Generation Methods
-### 2.1: Original Features
+## Шаг 2: Определение методов генерации признаков
+### 2.1: Исходные признаки
 ```python
 def generate_original_features(X_train, X_test, preprocessor):
-    """Generate original features with scaling."""
+    """Генерация исходных признаков с масштабированием."""
     X_train_scaled = pd.DataFrame(
         preprocessor.transform(X_train),
         columns=X_train.columns
@@ -39,14 +39,14 @@ def generate_original_features(X_train, X_test, preprocessor):
     )
     return X_train_scaled, X_test_scaled
 ```
-### 2.2: Polynomial Features
+### 2.2: Полиномиальные признаки
 ```python
 def generate_polynomial_features(X_train, X_test, preprocessor):
-    """Generate polynomial features (degree 2)."""
-    # Preprocess data
+    """Генерация полиномиальных признаков (степень 2)."""
+    # Предварительная обработка данных
     X_train_scaled, X_test_scaled = generate_original_features(X_train, X_test, preprocessor)
     
-    # Generate polynomial features
+    # Генерация полиномиальных признаков
     poly = PolynomialFeatures(degree=2, include_bias=False)
     poly.fit(X_train_scaled)
     
@@ -59,40 +59,40 @@ def generate_polynomial_features(X_train, X_test, preprocessor):
     
     return X_train_features, X_test_features
 ```
-### 2.3: Interaction Features
+### 2.3: Признаки взаимодействия
 ```python
 def generate_interaction_features(X_train, X_test, preprocessor):
-    """Generate interaction features (pairwise multiplication)."""
-    # Preprocess data
+    """Генерация признаков взаимодействия (попарное умножение)."""
+    # Предварительная обработка данных
     X_train_scaled, X_test_scaled = generate_original_features(X_train, X_test, preprocessor)
     
-    # Create copies to add interaction features
+    # Создание копий для добавления признаков взаимодействия
     X_train_interact = X_train_scaled.copy()
     X_test_interact = X_test_scaled.copy()
     
-    # Generate pairwise interactions
+    # Генерация попарных взаимодействий
     features = X_train_scaled.columns
     for i, feat1 in enumerate(features):
         for j, feat2 in enumerate(features):
-            if i < j:  # Avoid duplicates and self-interactions
+            if i < j:  # Избегание дубликатов и самовзаимодействий
                 X_train_interact[f'interaction_{feat1}_{feat2}'] = X_train_scaled[feat1] * X_train_scaled[feat2]
                 X_test_interact[f'interaction_{feat1}_{feat2}'] = X_test_scaled[feat1] * X_test_scaled[feat2]
     
     return X_train_interact, X_test_interact
 ```
-### 2.4: Bayesian Network Features
+### 2.4: Признаки из байесовской сети
 ```python
 def generate_bayesian_network_features(X_train, X_test, y_train):
-    """Generate features using Bayesian Network."""
-    # Initialize BN generator
+    """Генерация признаков с использованием байесовской сети."""
+    # Инициализация генератора BN
     bn_generator = BNFeatureGenerator()
     bn_generator.fit(X=X_train, y=y_train)
     
-    # Transform data
+    # Преобразование данных
     X_train_bn = bn_generator.transform(X_train).reset_index(drop=True)
     X_test_bn = bn_generator.transform(X_test).reset_index(drop=True)
     
-    # Handle categorical features
+    # Обработка категориальных признаков
     encoders = {}
     for col in X_train_bn.columns:
         if X_train_bn[col].dtype == 'object':
@@ -107,17 +107,17 @@ def generate_bayesian_network_features(X_train, X_test, y_train):
     return X_train_bn, X_test_bn
 ```
 
-## Step 3: Initialize Models and Evaluation Parameters
+## Шаг 3: Инициализация моделей и параметров оценки
 
 ```python
-# Define models to compare
+# Определение моделей для сравнения
 models = {
     'Decision Tree': (DecisionTreeClassifier, {'random_state': 42}),
     'Logistic Regression': (LogisticRegression, {'random_state': 42, 'max_iter': 1000}),
     'SVC': (SVC, {'random_state': 42})
 }
 
-# Feature generation methods
+# Методы генерации признаков
 feature_generators = {
     'Original': generate_original_features,
     'Polynomial': generate_polynomial_features,
@@ -125,18 +125,18 @@ feature_generators = {
     'Bayesian Network': generate_bayesian_network_features
 }
 
-# Evaluation parameters
+# Параметры оценки
 n_folds = 5
 kf = KFold(n_splits=n_folds, shuffle=True, random_state=42)
 
-# Container for results
+# Контейнер для результатов
 all_results = {}
 ```
 
-## Step 4: Cross-Validation and Model Evaluation
+## Шаг 4: Кросс-валидация и оценка моделей
 
 ```python
-# Evaluate all combinations of models and feature types
+# Оценка всех комбинаций моделей и типов признаков
 for model_name, (model_class, model_params) in models.items():
     all_results[model_name] = {}
     
@@ -145,34 +145,34 @@ for model_name, (model_class, model_params) in models.items():
         f1_scores = []
         feature_importance = None
         
-        # Cross-validation
+        # Кросс-валидация
         for fold_idx, (train_idx, test_idx) in enumerate(kf.split(X)):
             X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
             
-            # Generate features
+            # Генерация признаков
             if feature_type == 'Bayesian Network':
                 X_train_features, X_test_features = feature_generator(X_train, X_test, y_train)
             else:
                 X_train_features, X_test_features = feature_generator(X_train, X_test, preprocessor)
             
-            # Train model
+            # Обучение модели
             model = model_class(**model_params)
             model.fit(X_train_features, y_train)
             
-            # Evaluate model
+            # Оценка модели
             y_pred = model.predict(X_test_features)
             accuracy_scores.append(accuracy_score(y_test, y_pred))
             f1_scores.append(f1_score(y_test, y_pred, average='macro'))
             
-            # Store feature importance for first fold
+            # Сохранение важности признаков для первого фолда
             if fold_idx == 0 and hasattr(model, 'feature_importances_'):
                 feature_importance = pd.Series(
                     model.feature_importances_,
                     index=X_train_features.columns
                 )
         
-        # Calculate average metrics
+        # Расчет средних метрик
         all_results[model_name][feature_type] = {
             'accuracy': np.mean(accuracy_scores),
             'accuracy_std': np.std(accuracy_scores),
@@ -183,39 +183,39 @@ for model_name, (model_class, model_params) in models.items():
         if feature_importance is not None:
             all_results[model_name][feature_type]['importance'] = feature_importance
 
-# Print detailed performance comparison
+# Вывод подробного сравнения производительности
 print("\n" + "="*80)
-print("DETAILED PERFORMANCE COMPARISON")
+print("ПОДРОБНОЕ СРАВНЕНИЕ ПРОИЗВОДИТЕЛЬНОСТИ")
 print("="*80)
 
 for feature_name in feature_generators.keys():
-    print(f"\n{feature_name} Features:")
+    print(f"\nПризнаки {feature_name}:")
     print("-" * 60)
     
     for model_name in models:
         result = all_results[model_name][feature_name]
         print(f"\n{model_name}:")
-        print(f"  Accuracy:  {result['accuracy']:.4f} (±{result['accuracy_std']:.4f})")
-        print(f"  F1 Score:  {result['f1']:.4f} (±{result['f1_std']:.4f})")
+        print(f"  Точность: {result['accuracy']:.4f} (±{result['accuracy_std']:.4f})")
+        print(f"  F1-оценка: {result['f1']:.4f} (±{result['f1_std']:.4f})")
 ```
 
-## Step 5: Visualization and Analysis
+## Шаг 5: Визуализация и анализ
 
 ```python
-# Find best model for each feature type
+# Поиск лучшей модели для каждого типа признаков
 print("\n\n" + "="*80)
-print("BEST MODELS SUMMARY")
+print("СВОДКА ЛУЧШИХ МОДЕЛЕЙ")
 print("="*80)
 
 for feature_name in feature_generators.keys():
     best_model = max(models.keys(), 
                     key=lambda model: all_results[model][feature_name]['accuracy'])
     
-    print(f"\nBest model with {feature_name} features: {best_model}")
-    print(f"  Accuracy: {all_results[best_model][feature_name]['accuracy']:.4f} (±{all_results[best_model][feature_name]['accuracy_std']:.4f})")
-    print(f"  F1 Score: {all_results[best_model][feature_name]['f1']:.4f} (±{all_results[best_model][feature_name]['f1_std']:.4f})")
+    print(f"\nЛучшая модель с признаками {feature_name}: {best_model}")
+    print(f"  Точность: {all_results[best_model][feature_name]['accuracy']:.4f} (±{all_results[best_model][feature_name]['accuracy_std']:.4f})")
+    print(f"  F1-оценка: {all_results[best_model][feature_name]['f1']:.4f} (±{all_results[best_model][feature_name]['f1_std']:.4f})")
 
-# Find the overall best model and feature combination
+# Поиск лучшей комбинации модели и признаков
 best_feature = None
 best_model = None
 best_accuracy = 0
@@ -228,7 +228,7 @@ for model_name in models:
             best_model = model_name
             best_feature = feature_name
 
-# Create performance comparison chart
+# Создание диаграммы сравнения производительности
 accuracies = []
 f1_scores = []
 model_names = []

@@ -1,39 +1,39 @@
 # CausalFeatureSelector
 
-## Overview
+## Обзор
 
-The [`CausalFeatureSelector`](../../api/feature_selection/causal_feature_selection.md) class implements a causal
-model-inspired feature selection method for identifying features with significant causal effects on a target variable.
-This approach is based on the methodology described in the
-paper ["A Causal Model-Inspired Automatic Feature-Selection Method for Developing Data-Driven Soft Sensors in Complex Industrial Processes"](https://www.sciencedirect.com/science/article/pii/S2095809922005641).
-Instead of relying on correlation, it selects features by quantifying their causal influence through entropy reduction,
-ensuring interpretable and causally relevant feature subsets.
+Класс [`CausalFeatureSelector`](../../api/feature_selection/causal_feature_selection.md) реализует метод отбора признаков,
+вдохновленный каузальными моделями, для выявления признаков со значительным каузальным влиянием на целевую переменную.
+Этот подход основан на методологии, описанной в статье
+["A Causal Model-Inspired Automatic Feature-Selection Method for Developing Data-Driven Soft Sensors in Complex Industrial Processes"](https://www.sciencedirect.com/science/article/pii/S2095809922005641).
+Вместо того чтобы полагаться на корреляцию, он отбирает признаки, количественно оценивая их каузальное влияние через
+снижение энтропии, обеспечивая интерпретируемые и каузально релевантные подмножества признаков.
 
-## Key Features
+## Ключевые особенности
 
-- **Causal Effect Estimation**: Evaluates features based on their ability to reduce uncertainty in the target variable.
-- **IQR Discretization**: Automatically bins continuous features using the Interquartile Range (IQR) rule.
-- **Scikit-Learn Integration**: Compatible with scikit-learn pipelines and transformers.
+- **Оценка каузального эффекта**: оценивает признаки на основе их способности снижать неопределенность в целевой переменной.
+- **Дискретизация по IQR**: автоматически разбивает непрерывные признаки на интервалы с использованием правила межквартильного размаха (IQR).
+- **Интеграция со Scikit-Learn**: совместим с конвейерами и преобразователями scikit-learn.
 
-## Mathematical Background
+## Математическое обоснование
 
-### Discretization
+### Дискретизация
 
-Features and the target variable are discretized using IQR-based binning. The number of bins `n_bins` is calculated as:
+Признаки и целевая переменная дискретизируются с использованием разбиения на основе IQR. Количество интервалов `n_bins` рассчитывается как:
 
 \[ n_{\text{bins}} = \max\left(2, \left\lceil \frac{R}{2 \cdot \text{IQR} \cdot n^{1/3}} \cdot \log_2(n + 1) \right\rceil \right) \]
 
-where \( R \) is the data range, \( \text{IQR} \) is the interquartile range, and \( n \) is the sample size.
+где \( R \) — это диапазон данных, \( \text{IQR} \) — межквартильный размах, а \( n \) — размер выборки.
 
-### Causal Effect Calculation
+### Расчет каузального эффекта
 
-The causal effect of feature \( X_i \) on target \( Y \) is computed as the reduction in conditional entropy:
+Каузальный эффект признака \( X_i \) на цель \( Y \) вычисляется как уменьшение условной энтропии:
 
-\[\text{CE}(X_i \rightarrow Y) = H(Y \mid \text{other features}) - H(Y \mid X_i, \text{other features})\]
+\[\text{CE}(X_i \rightarrow Y) = H(Y \mid \text{другие признаки}) - H(Y \mid X_i, \text{другие признаки})\]
 
-where \( H \) denotes entropy. Features with \( \text{CE} > 0 \) are retained.
+где \( H \) обозначает энтропию. Сохраняются признаки с \( \text{CE} > 0 \).
 
-## Example
+## Пример
 
 ``` py title="examples/feature_selection/causal_fs_example.py"
 --8<-- "examples/feature_selection/causal_fs_example.py"

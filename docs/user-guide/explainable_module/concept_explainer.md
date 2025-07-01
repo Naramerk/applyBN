@@ -1,62 +1,62 @@
-# ConceptCausalExplainer: Mathematical Background
+# ConceptCausalExplainer: Математическое обоснование
 
-## Overview
-The [`ConceptCausalExplainer`](../../api/explainable/concepts_causal.md) implements a novel approach to model
-interpretation through concept-level causal analysis,
-as outlined in the paper
+## Обзор
+[`ConceptCausalExplainer`](../../api/explainable/concepts_causal.md) реализует новый подход к
+интерпретации моделей через каузальный анализ на уровне концептов,
+как описано в статье
 ["Concept-Level Model Interpretation From the Causal Aspect"](https://ieeexplore.ieee.org/abstract/document/9904301).
-Rather than analyzing individual feature importance, this module identifies high-level concepts
-within data and estimates their causal effects on model behavior,
-offering interpretability that aligns with human-understandable concepts.
+Вместо анализа важности отдельных признаков, этот модуль выявляет высокоуровневые концепты
+в данных и оценивает их каузальное влияние на поведение модели,
+предлагая интерпретируемость, которая соответствует понятным для человека концептам.
 
-## Mathematical Foundation
+## Математическая основа
 
-### Concept Identification and Extraction
-The module uses a two-stage approach to concept discovery:
+### Идентификация и извлечение концептов
+Модуль использует двухэтапный подход к обнаружению концептов:
 
-1. **Clustering-based Concept Discovery**: The data space is partitioned using KMeans clustering:
+1. **Обнаружение концептов на основе кластеризации**: Пространство данных разделяется с помощью кластеризации KMeans:
 
    \( C_i = \{x_j \in D \mid \arg\min_k \|x_j - \mu_k\|^2 = i\} \)
 
-   where:
+   где:
 
-   - $C_i$ represents cluster $i$, 
-   - $D$ is the discovery dataset,
-   - $\mu_k$ are cluster centroids.
+   - $C_i$ представляет кластер $i$,
+   - $D$ — это набор данных для обнаружения,
+   - $\mu_k$ — это центроиды кластеров.
 
-&nbsp;2. **Discriminative Concept Validation**: Each cluster is validated by training a linear SVM:
+&nbsp;2. **Дискриминационная валидация концептов**: Каждый кластер валидируется путем обучения линейного SVM:
 
    \( S_i(x) = \text{sign}(w_i^T x + b_i) \)
 
-   A cluster is considered a valid concept if it can be discriminated from the natural dataset with AUC > threshold.
+   Кластер считается валидным концептом, если его можно отличить от естественного набора данных с AUC > порога.
 
-### Concept Space Representation
-The feature space is transformed into a concept space:
+### Представление в пространстве концептов
+Пространство признаков преобразуется в пространство концептов:
 \( A(x) = [A_1(x), A_2(x), ..., A_m(x)] \)
-where $A_i(x) = 1$ if $x$ belongs to concept $i$, and 0 otherwise.
+где $A_i(x) = 1$, если $x$ принадлежит концепту $i$, и 0 в противном случае.
 
-### Causal Effect Estimation
-For a binary outcome $L_f$, the causal effect of concept $A_i$ is estimated using:
+### Оценка каузального эффекта
+Для бинарного исхода $L_f$ каузальный эффект концепта $A_i$ оценивается с помощью:
 \(\tau_i = \mathbb{E}[L_f \mid do(A_i = 1)] - \mathbb{E}[L_f \mid do(A_i = 0)]\)
 
-For continuous outcomes like model confidence, the Double Machine Learning framework is used:
+Для непрерывных исходов, таких как уверенность модели, используется фреймворк Double Machine Learning:
 \(\tau_i(x) = \mathbb{E}[Y \mid do(A_i = 1), X = x] - \mathbb{E}[Y \mid do(A_i = 0), X = x]\)
 
-where $Y$ is the outcome of interest (e.g., model confidence) and $X$ are other concepts acting as controls.
+где $Y$ — интересующий исход (например, уверенность модели), а $X$ — другие концепты, выступающие в качестве контрольных переменных.
 
-## Applications
+## Применения
 
-This approach offers several advantages:
+Этот подход предлагает несколько преимуществ:
 
-1. **Interpretability**: Concepts correspond to human-understandable patterns in data
-2. **Causal Understanding**: Estimates of causal effects rather than correlations
-3. **Diagnostic Power**: Identifies which concepts causally impact model behavior
-4. **Transferability**: Concepts can be applied across different models on the same data
+1. **Интерпретируемость**: Концепты соответствуют понятным для человека паттернам в данных
+2. **Каузальное понимание**: Оценки каузальных эффектов, а не корреляций
+3. **Диагностическая сила**: Выявляет, какие концепты каузально влияют на поведение модели
+4. **Переносимость**: Концепты могут применяться к разным моделям на одних и тех же данных
 
-By understanding causal relationships between concepts and model behavior,
-users can make more informed decisions about model improvements, data collection, and feature engineering strategies.
+Понимая каузальные связи между концептами и поведением модели,
+пользователи могут принимать более обоснованные решения об улучшениях модели, сборе данных и стратегиях инжиниринга признаков.
 
-## Example
+## Пример
 
 ``` py title="examples/explainable/concept_explainer.py"
 --8<-- "examples/explainable/concept_explainer.py"

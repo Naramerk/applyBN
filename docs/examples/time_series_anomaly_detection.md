@@ -1,29 +1,29 @@
-# Time series anomaly detection
+# Обнаружение аномалий во временных рядах
 
-## Overview
+## Обзор
 
-Anomaly detection in temporal data requires careful balance between sensitivity and specificity, particularly when
-implementing Temporal Deep Belief Networks (tDBNs). The effectiveness of these models hinges on precise configuration of
-several critical parameters:
+Обнаружение аномалий во временных данных требует тщательного баланса между чувствительностью и специфичностью, особенно при
+реализации временных глубоких сетей доверия (tDBN). Эффективность этих моделей зависит от точной настройки
+нескольких критических параметров:
 
-Structural Parameters:
+Структурные параметры:
 
-- num_parents: Controls network complexity (typically 1-5)
-- markov_lag: Governs temporal dependency range (usually 1-3 steps) (greatly increase computation time)
-- Non_stationary: force algorithm to compute num_transition matrices. If the process is stationary, 
-only one matrix is required.
+- num_parents: контролирует сложность сети (обычно 1-5)
+- markov_lag: управляет диапазоном временной зависимости (обычно 1-3 шага) (значительно увеличивает время вычислений)
+- Non_stationary: заставляет алгоритм вычислять матрицы `num_transition`. Если процесс стационарный,
+требуется только одна матрица.
 
-Processing Parameters:
+Параметры обработки:
 
-- artificial_slicing: Enables window-based temporal analysis
-- artificial_slicing_params: Defines window size and stride characteristics
+- artificial_slicing: включает временной анализ на основе окон
+- artificial_slicing_params: определяет характеристики размера окна и шага
 
-Our example demonstrates that optimal performance is achieved not through maximal complexity, but through strategic
-parameter calibration. Special attention will be given to artificial slicing.
+Наш пример демонстрирует, что оптимальная производительность достигается не за счет максимальной сложности, а за счет стратегической
+калибровки параметров. Особое внимание будет уделено искусственной нарезке.
 
-The dataset was taken from [here](https://www.timeseriesclassification.com/description.php?Dataset=ECG200).
+Набор данных был взят отсюда [здесь](https://www.timeseriesclassification.com/description.php?Dataset=ECG200).
 
-## Set up
+## Настройка
 
 ```python
 import numpy as np
@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 import seaborn as sns
-from pyts.approximation import SymbolicAggregateApproximation # not installed by default
+from pyts.approximation import SymbolicAggregateApproximation # не устанавливается по умолчанию
 from sklearn.metrics import f1_score
 
 sns.set_theme()
@@ -43,15 +43,15 @@ sns.set_theme()
 np.random.seed(51)
 ```
 
-## Step 1. Load data
+## Шаг 1. Загрузка данных
 ```python
 df = pd.read_csv("data/anomaly_detection/ts/ECG200.csv")
-df = df.loc[:, df.columns[1::3].tolist() + ["anomaly"]] # take each 3 step for faster computations
+df = df.loc[:, df.columns[1::3].tolist() + ["anomaly"]] # берем каждый 3-й шаг для ускорения вычислений
 print(df.shape) # (200, 33)
 ```
 
-## Step 2. Artificial slicing
-This example demonstrates the role of appropriate hyperparameters for slicing.
+## Шаг 2. Искусственная нарезка
+Этот пример демонстрирует роль подходящих гиперпараметров для нарезки.
 
 ```python
 y = df.pop("anomaly")
@@ -85,9 +85,9 @@ plt.show()
 ```
 ![img.png](sliding_variations.png)
 
-So it is very important to keep balance in target vector. 
+Поэтому очень важно сохранять баланс в целевом векторе.
 
-## Step 3. Data processing
+## Шаг 3. Обработка данных
 ```python
 transformer = TemporalDBNTransformer(window=5, stride=1)
 df_ = transformer.transform(df, y)
@@ -95,7 +95,7 @@ df_ = transformer.transform(df, y)
 y = df_.pop("anomaly")
 ```
 
-## Step 4. SAX
+## Шаг 4. SAX
 ```python
 transformer = SymbolicAggregateApproximation()
 sax_vals = transformer.transform(df_.iloc[:, 1:])
@@ -104,7 +104,7 @@ df_ = df_.astype(str)
 df_.iloc[:, 1:] = sax_vals
 ```
 
-## Step 5. Detection
+## Шаг 5. Обнаружение
 
 ```python
 detector = FastTimeSeriesDetector(markov_lag=1, num_parents=1)
@@ -116,7 +116,7 @@ preds_cont = detector.predict(df_)
 print(f1_score(y, preds_cont)) # 0.9171270718232044
 ```
 
-## Variations
+## Вариации
 
 ```python
 for i in range(2, 6, 2):
@@ -146,7 +146,7 @@ for i in range(2, 6, 2):
     print("____")
 ```
 
-Result:
+Результат:
 ```
 Evaluating network with LL score.
 2

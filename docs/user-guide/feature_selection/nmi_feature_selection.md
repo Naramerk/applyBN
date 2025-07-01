@@ -1,58 +1,58 @@
-# NMIFeatureSelector: Feature Selection via Normalized Mutual Information
+# NMIFeatureSelector: Отбор признаков с помощью нормализованной взаимной информации
 
-## Overview
+## Обзор
 
-The [`NMIFeatureSelector`](../../api/feature_selection/nmi_feature_selection.md) class performs feature selection by
-evaluating the Normalized Mutual Information (NMI) between features and a target variable based on the paper [
+Класс [`NMIFeatureSelector`](../../api/feature_selection/nmi_feature_selection.md) выполняет отбор признаков путем
+оценки нормализованной взаимной информации (NMI) между признаками и целевой переменной на основе статьи [
 `Local Bayesian Network Structure Learning for High-Dimensional Data`](https://ieeexplore.ieee.org/document/10589754).
-This method identifies features with strong statistical dependencies on the target while reducing redundancy among
-selected features. It is particularly effective for capturing non-linear relationships and is compatible with
-scikit-learn's `SelectorMixin` API.
+Этот метод выявляет признаки с сильными статистическими зависимостями от цели, одновременно уменьшая избыточность среди
+выбранных признаков. Он особенно эффективен для улавливания нелинейных взаимосвязей и совместим с
+API `SelectorMixin` из scikit-learn.
 
 ---
 
-## Mathematical Foundation
+## Математическая основа
 
-### Normalized Mutual Information (NMI)
+### Нормализованная взаимная информация (NMI)
 
-NMI measures the dependency between two variables, normalized to the range [0, 1]. For features \(a\) and \(b\), NMI is
-computed as:
+NMI измеряет зависимость между двумя переменными, нормализованную в диапазоне [0, 1]. Для признаков \(a\) и \(b\) NMI
+вычисляется как:
 
 \[ \text{NMI}(a, b) = \frac{H(a) + H(b) - H(a, b)}{\min(H(a), H(b))} \]
 
-where:
+где:
 
-- \(H(a)\) and \(H(b)\) are the entropies of \(a\) and \(b\),
-- \(H(a, b)\) is their joint entropy.
+- \(H(a)\) и \(H(b)\) — это энтропии \(a\) и \(b\),
+- \(H(a, b)\) — их совместная энтропия.
 
-Higher NMI values indicate stronger dependencies.
+Более высокие значения NMI указывают на более сильные зависимости.
 
-## Data Discretization
+## Дискретизация данных
 
-The algorithm discretizes features to compute entropy efficiently:
+Алгоритм дискретизирует признаки для эффективного вычисления энтропии:
 
-- **Integer/string columns**: Mapped to enumerated categories.
-- **Float columns**: Discretized using uniform discretization with a given number of bins.
-
----
-
-## Feature Selection Process
-
-1. **First Stage**:
-    - Compute NMI between each feature and the target.
-    - Select features with NMI > `threshold`.
-
-2. **Second Stage**:
-    - For each pair of selected features, compute pairwise NMI.
-    - Remove feature \(f_j\) if:
-        - Another feature \(f_i\) has higher NMI with the target, and
-        - NMI(\(f_i\), \(f_j\)) > NMI(\(f_j\), target).
-
-This reduces redundancy while prioritizing features more relevant to the target.
+- **Целочисленные/строковые столбцы**: сопоставляются с перечислимыми категориями.
+- **Столбцы с плавающей точкой**: дискретизируются с использованием равномерной дискретизации с заданным количеством бинов.
 
 ---
 
-## Example
+## Процесс отбора признаков
+
+1. **Первый этап**:
+    - Вычислить NMI между каждым признаком и целью.
+    - Выбрать признаки с NMI > `threshold`.
+
+2. **Второй этап**:
+    - Для каждой пары выбранных признаков вычислить попарное NMI.
+    - Удалить признак \(f_j\), если:
+        - Другой признак \(f_i\) имеет более высокое NMI с целью, и
+        - NMI(\(f_i\), \(f_j\)) > NMI(\(f_j\), цель).
+
+Это уменьшает избыточность, приоритизируя признаки, более релевантные для цели.
+
+---
+
+## Пример
 
 ``` py title="examples/feature_selection/nmi_fs_example.py"
 --8<-- "examples/feature_selection/nmi_fs_example.py"

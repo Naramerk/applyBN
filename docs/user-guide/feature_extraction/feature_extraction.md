@@ -1,35 +1,35 @@
-# BNFeatureGenerator: Mathematical Background
+# BNFeatureGenerator: Математическое обоснование
 
-## Overview
+## Обзор
 
-The [`BNFeatureGenerator`](../../api/feature_extraction/feature_extraction.md) implements a novel approach to feature engineering through Bayesian Networks, as described in the paper ["Bayesian feature construction for the improvement of classification performance"](https://www.researchgate.net/publication/339293950_Bayesian_feature_construction_for_the_improvement_of_classification_performance) by Manolis Maragoudakis. This module automatically constructs probabilistic lambda-features derived from Bayesian Network inference, enabling complex relationship modeling that can enhance model performance.
+[`BNFeatureGenerator`](../../api/feature_extraction/feature_extraction.md) реализует новый подход к инжинирингу признаков с помощью байесовских сетей, как описано в статье ["Bayesian feature construction for the improvement of classification performance"](https://www.researchgate.net/publication/339293950_Bayesian_feature_construction_for_the_improvement_of_classification_performance) Манолиса Марагудакиса. Этот модуль автоматически создает вероятностные лямбда-признаки, полученные из вывода в байесовской сети, что позволяет моделировать сложные взаимосвязи и может улучшить производительность модели.
 
-## Mathematical Foundation
+## Математическая основа
 
-### Bayesian Network Construction
+### Построение байесовской сети
 
-The algorithm consists of several key steps:
+Алгоритм состоит из нескольких ключевых шагов:
 
-1. **Structure Learning**: A directed acyclic graph (DAG) is learned to represent probabilistic relationships between variables
+1. **Обучение структуре**: Обучается направленный ациклический граф (DAG) для представления вероятностных взаимосвязей между переменными.
 
-2. **Parameter Learning**: The module fits conditional probability distributions for each node
+2. **Обучение параметрам**: Модуль подбирает условные вероятностные распределения для каждого узла.
 
-### Feature Generation through Probabilistic Inference
+### Генерация признаков через вероятностный вывод
 
-The transformation process produces lambda-features by:
+Процесс преобразования создает лямбда-признаки следующим образом:
 
-1. For each original feature $X_i$, generating a corresponding lambda-feature $\lambda_i$
-2. For discrete features: $\lambda_i = P(X_i = x_i | Pa(X_i) = pa_i)$
-3. For continuous features: $\lambda_i = P(X_i \leq x_i | Pa(X_i) = pa_i)$
+1. Для каждого исходного признака $X_i$ генерируется соответствующий лямбда-признак $\lambda_i$.
+2. Для дискретных признаков: $\lambda_i = P(X_i = x_i | Pa(X_i) = pa_i)$
+3. Для непрерывных признаков: $\lambda_i = P(X_i \leq x_i | Pa(X_i) = pa_i)$
 
-These lambda-features capture complex probabilistic relationships that linear models cannot express, encoding the conditional likelihood of observed values given their parents.
+Эти лямбда-признаки фиксируют сложные вероятностные взаимосвязи, которые линейные модели не могут выразить, кодируя условную вероятность наблюдаемых значений при заданных родительских узлах.
 
-## Example
+## Пример
 
-The following example demonstrates how to use BNFeatureGenerator on the banknote authentication dataset:
+Следующий пример демонстрирует, как использовать BNFeatureGenerator на наборе данных аутентификации банкнот:
 
 ``` py title="examples/feature_extraction/banknote-authentication_example.py"
 --8<-- "examples/feature_extraction/banknote_authentication_example.py"
 ```
 
-The BNFeatureGenerator enhances model performance by capturing complex probabilistic relationships in the data, improving the classifier's ability to distinguish between classes, as demonstrated in the example above. 
+BNFeatureGenerator повышает производительность модели, фиксируя сложные вероятностные взаимосвязи в данных, что улучшает способность классификатора различать классы, как показано в примере выше. 

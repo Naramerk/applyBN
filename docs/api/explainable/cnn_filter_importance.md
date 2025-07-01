@@ -1,7 +1,7 @@
-# Causal analysis of CNN filters
+# Каузальный анализ фильтров CNN
 
-[User Guide reference](../../user-guide/explainable_module/cnn_filter_analysis.md)
+[Ссылка на руководство пользователя](../../user-guide/explainable_module/cnn_filter_analysis.md)
 
 ::: applybn.explainable.nn_layers_importance.cnn_filter_importance.CausalCNNExplainer
 
-# Example
+# Пример

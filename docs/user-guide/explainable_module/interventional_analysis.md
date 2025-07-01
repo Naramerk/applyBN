@@ -1,49 +1,49 @@
-# InterventionCausalExplainer: Mathematical Background
+# InterventionCausalExplainer: Математическое обоснование
 
-## Overview
-The [`InterventionCausalExplainer`](../../api/explainable/interventions_causal.md) implements
-a causal inference approach to model interpretation,
-establishing feature importance through direct intervention rather than traditional correlation-based methods.
-This module bridges machine learning interpretability with causal inference techniques to
-determine how features causally impact model confidence and uncertainty.
+## Обзор
+[`InterventionCausalExplainer`](../../api/explainable/interventions_causal.md) реализует
+подход на основе каузального вывода для интерпретации моделей,
+устанавливая важность признаков через прямое вмешательство, а не традиционные методы на основе корреляции.
+Этот модуль объединяет интерпретируемость машинного обучения с техниками каузального вывода, чтобы
+определить, как признаки каузально влияют на уверенность и неопределенность модели.
 
-## Mathematical Foundation
+## Математическая основа
 
-### Causal Forest for Treatment Effect Estimation
-The core mathematical concept utilizes the Double Machine Learning (DML) framework with Causal Forests.
-For each feature $X_j$, we estimate its causal effect on model confidence:
+### Каузальный лес для оценки эффекта воздействия
+Основная математическая концепция использует фреймворк Double Machine Learning (DML) с каузальными лесами.
+Для каждого признака $X_j$ мы оцениваем его каузальный эффект на уверенность модели:
 
 $$\tau(X_j) = \mathbb{E}[C | do(X_j = x)] - \mathbb{E}[C]$$
 
-where $C$ represents model confidence and $do(X_j = x)$ is Pearl's do-operator indicating intervention.
-The DML approach employs orthogonalization to remove confounding effects:
+где $C$ представляет уверенность модели, а $do(X_j = x)$ — это do-оператор Пирла, указывающий на вмешательство.
+Подход DML использует ортогонализацию для устранения смешивающих эффектов:
 
 $$\tau(X_j) = \mathbb{E}[C - \mathbb{E}[C|X_{-j}] | X_j = x] - \mathbb{E}[X_j - \mathbb{E}[X_j|X_{-j}]]$$
 
-### Aleatoric Uncertainty Quantification
-The module leverages Data-IQ to compute model confidence and aleatoric uncertainty.
-Aleatoric uncertainty represents the inherent noise in the data and is estimated by:
+### Квантификация алеаторной неопределенности
+Модуль использует Data-IQ для вычисления уверенности модели и алеаторной неопределенности.
+Алеаторная неопределенность представляет собой собственный шум в данных и оценивается как:
 
 $$U_A = \mathbb{E}[\text{Var}(Y|X)]$$
 
-where $Y$ is the target variable and $X$ are the features.
+где $Y$ — целевая переменная, а $X$ — признаки.
 
-### Intervention Analysis
-The module performs direct interventions by sampling new values for high-impact
-features from their original distribution range:
+### Анализ вмешательств
+Модуль выполняет прямые вмешательства путем выборки новых значений для признаков с высоким влиянием
+из их исходного диапазона распределения:
 
 $$X_j^{new} \sim \text{Uniform}(\min(X_j), \max(X_j))$$
 
-This creates a counterfactual dataset to measure before/after changes in model confidence and uncertainty,
-providing a more robust understanding of feature importance than traditional methods.
+Это создает контрфактический набор данных для измерения изменений уверенности и неопределенности модели до и после,
+обеспечивая более надежное понимание важности признаков, чем традиционные методы.
 
-## Applications
-This approach is particularly valuable in high-stakes decision systems where understanding causal relationships between
-features and model behavior is critical.
-By identifying which features causally affect model confidence,
-it enables more targeted data collection and model improvement strategies.
+## Применения
+Этот подход особенно ценен в системах принятия решений с высокими ставками, где понимание каузальных связей между
+признаками и поведением модели является критически важным.
+Выявляя, какие признаки каузально влияют на уверенность модели,
+он позволяет разрабатывать более целенаправленные стратегии сбора данных и улучшения модели.
 
-## Example
+## Пример
 
 ``` py title="examples/explainable/intervention_explainer.py"
 --8<-- "examples/explainable/intervention_explainer.py"

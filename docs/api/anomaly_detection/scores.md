@@ -1,43 +1,43 @@
-# Scores as Detector Internals
+# Оценки как внутренние компоненты детектора
 
-Detectors are just managers over scores objects. 
-They are a ways to evaluate each row in each subsample.
+Детекторы - это просто менеджеры над объектами оценок.
+Они представляют собой способы оценки каждой строки в каждой подвыборке.
 
 !!! warning
 
-    Scores have limited data types support.
+    Оценки имеют ограниченную поддержку типов данных.
 
-`applybn` implements two major group of scores: model based and proximity based.
+`applybn` реализует две основные группы оценок: на основе модели и на основе близости.
 
-Read more in [User Guide](../../user-guide/anomaly_detection_module/tabular_detection.md). 
+Подробнее читайте в [Руководстве пользователя](../../user-guide/anomaly_detection_module/tabular_detection.md).
 
 ---
 
-# Score
+# Оценка
 ::: applybn.anomaly_detection.scores.score.Score
 
 ---
 
-# Proximity based scores
-## Local Outlier Score
+# Оценки на основе близости
+## Оценка локальных выбросов
 ::: applybn.anomaly_detection.scores.proximity_based.LocalOutlierScore
 
-## Isolation Forest Score
+## Оценка на основе Isolation Forest
 ::: applybn.anomaly_detection.scores.proximity_based.IsolationForestScore
 
 ---
 
-# Model based scores
+# Оценки на основе модели
 ::: applybn.anomaly_detection.scores.model_based.ModelBasedScore
 
-## BN based Score
+## Оценка на основе BN
 ::: applybn.anomaly_detection.scores.model_based.BNBasedScore
 
-## IQR Based Score
+## Оценка на основе IQR
 ::: applybn.anomaly_detection.scores.model_based.IQRBasedScore
 
-## Conditional Probability Ratio Score
+## Оценка на основе отношения условных вероятностей
 ::: applybn.anomaly_detection.scores.model_based.CondRatioScore
 
-## Combined IQR and Conditional Probability Ratio Score
+## Комбинированная оценка на основе IQR и отношения условных вероятностей
 ::: applybn.anomaly_detection.scores.model_based.CombinedIQRandProbRatioScore

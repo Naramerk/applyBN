@@ -1,61 +1,61 @@
-# Oversampling based Bayesian networks
+# Ресемплинг на основе байесовских сетей
 
-## Overview
+## Обзор
 
-The [`BNOverSampler`](../../api/oversampling/bn_oversampling.md) implements a Bayesian Network-based approach to address
-class imbalance by learning feature distributions through **mixtures of Gaussians** and generating synthetic samples.
-This method captures complex feature relationships and multimodal distributions, offering statistically rigorous
-oversampling.
+[`BNOverSampler`](../../api/oversampling/bn_oversampling.md) реализует подход на основе байесовских сетей для решения
+проблемы дисбаланса классов путем изучения распределений признаков с помощью **смесей Гауссианов** и генерации синтетических выборок.
+Этот метод улавливает сложные взаимосвязи между признаками и мультимодальные распределения, предлагая статистически строгий
+ресемплинг.
 
-## Mathematical Foundation
+## Математическая основа
 
-### Bayesian Network with Mixture Models
+### Байесовская сеть со смешанными моделями
 
-The oversampler employs a Bayesian Network (BN) where nodes represent features and edges encode conditional
-dependencies. For flexible distribution modeling:
+Ресемплер использует байесовскую сеть (БС), где узлы представляют признаки, а ребра кодируют условные
+зависимости. Для гибкого моделирования распределений:
 
-1. **Continuous variables** are modeled using **Gaussian Mixture Models (GMM)**:
+1. **Непрерывные переменные** моделируются с использованием **смесей гауссовых моделей (GMM)**:
 
    \( P(X_i | \text{Pa}(X_i)) = \sum_{k=1}^K \pi_k \mathcal{N}(X_i | \mu_k, \Sigma_k) \)
 
-  where:
+  где:
 
-  - $\pi_k$: Mixture weights ($\sum \pi_k = 1$)
-  - $\mu_k, \Sigma_k$: Mean and covariance of the $k$-th Gaussian component
-  - $\text{Pa}(X_i)$: Parent nodes of $X_i$ in the BN
+  - $\pi_k$: веса смеси ($\sum \pi_k = 1$)
+  - $\mu_k, \Sigma_k$: среднее значение и ковариация $k$-го гауссова компонента
+  - $\text{Pa}(X_i)$: родительские узлы $X_i$ в БС
 
-&nbsp;2. **Discrete variables** use multinomial distributions conditioned on parent states.
+&nbsp;2. **Дискретные переменные** используют мультиномиальные распределения, обусловленные состояниями родительских узлов.
 
-### Parameter Learning
+### Обучение параметров
 
-The BN structure and parameters are learned via:
+Структура и параметры БС обучаются с помощью:
 
-- **Structure Learning**: Hill Climbing algorithm
-- **Parameter Estimation**: Expectation-Maximization (EM) algorithm for GMM components:
+- **Обучение структуре**: алгоритм "восхождение к вершине" (Hill Climbing)
+- **Оценка параметров**: алгоритм "ожидание-максимизация" (EM) для компонент GMM:
   \( \theta^* = \arg\max_\theta \mathbb{E}_{Z|X,\theta^{old}}[\log P(X,Z|\theta)] \)
-  where $Z$ represents latent mixture component assignments.
+  где $Z$ представляет скрытые назначения компонент смеси.
 
-### Synthetic Generation
+### Синтетическая генерация
 
-For minority class $C$, samples are drawn from the conditional distribution:
+Для миноритарного класса $C$ выборки извлекаются из условного распределения:
 \( P(\mathbf{X} | C) = \prod_{i=1}^d P(X_i | \text{Pa}(X_i), C) \)
-using ancestral sampling through the BN, with evidence fixed on the target class.
+с использованием семплирования по предкам через БС, с фиксированными свидетельствами для целевого класса.
 
-## Key Features
+## Ключевые особенности
 
-- **Multimodal Modeling**: GMMs capture complex distributions (e.g., multiple peaks in feature values)
-- **Conditional Sampling**: Generates samples respecting feature dependencies via BN structure
-- **Discrete-Continuous Hybrid**: Handles mixed data types natively through:
-    - Quantile discretization (preprocessing)
-    - Type-aware sampling (_disc_num_ columns cast to integers post-generation)
+- **Мультимодальное моделирование**: GMM улавливают сложные распределения (например, несколько пиков в значениях признаков)
+- **Условное семплирование**: генерирует выборки, учитывающие зависимости между признаками, через структуру БС
+- **Гибрид дискретных и непрерывных данных**: нативно обрабатывает смешанные типы данных через:
+    - Квантильную дискретизацию (предварительная обработка)
+    - Семплирование с учетом типа (столбцы _disc_num_ преобразуются в целые числа после генерации)
 
-## Advantages Over Traditional Methods
+## Преимущества перед традиционными методами
 
-1. Preserves **non-linear correlations** between features
-2. Avoids interpolation artifacts (common in SMOTE) through probabilistic sampling
-3. Adapts to heterogeneous distributions via mixture components
+1. Сохраняет **нелинейные корреляции** между признаками
+2. Избегает артефактов интерполяции (характерных для SMOTE) за счет вероятностного семплирования
+3. Адаптируется к гетерогенным распределениям через компоненты смеси
 
-## Example
+## Пример
 
 ``` py title="examples/imbalanced/iris_example.py"
 --8<-- "examples/imbalanced/iris_example.py"

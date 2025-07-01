@@ -1,11 +1,11 @@
-# tDBN Data Transformer
+# Трансформер данных tDBN
 
-[TemporalDBNTransformer](#transformer) is performing artificial slicing of time-series. 
-This allows user to use any time-series dataset. 
+[TemporalDBNTransformer](#transformer) выполняет искусственную нарезку временных рядов.
+Это позволяет пользователю использовать любой набор данных временных рядов.
 
-Read more in [User Guide](../../user-guide/anomaly_detection_module/tDBN_data_formatter.md).
+Подробнее читайте в [Руководстве пользователя](../../user-guide/anomaly_detection_module/tDBN_data_formatter.md).
 
 ---
 
-# Transformer
+# Трансформер
 ::: applybn.anomaly_detection.dynamic_anomaly_detector.data_formatter.TemporalDBNTransformer

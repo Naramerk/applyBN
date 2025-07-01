@@ -1,11 +1,11 @@
-# CausalFeatureSelector: Feature Selection via Causal analysis
+# CausalFeatureSelector: отбор признаков с помощью каузального анализа
 
-[User Guide reference](../../user-guide/feature_selection/causal_feature_selection.md)
+[Ссылка на руководство пользователя](../../user-guide/feature_selection/causal_feature_selection.md)
 
 ::: applybn.feature_selection.ce_feature_selector.CausalFeatureSelector
 
 
-# Example
+# Пример
 
 ```python
 from applybn.feature_selection.ce_feature_selector import CausalFeatureSelector
