@@ -121,7 +121,7 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
         if target_predictions is not None:
             result["lambda_" + target_name] = target_predictions
 
-        return result
+        return pd.concat([X, result], axis=1) 
 
     def create_black_list(self, X: pd.DataFrame, y: Optional[str]):
         """
@@ -220,7 +220,7 @@ class BNFeatureGenerator(BaseEstimator, TransformerMixin):
     def _process_non_discrete_node(self, feature, row, pvals, vals, fill_na):
         """
         Processes a non-discrete node.
-
+        
         Args:
             feature (str): the name of the feature (node).
             row (pd.Series): a row of data from the DataFrame.
