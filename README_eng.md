@@ -68,7 +68,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import KBinsDiscretizer
 from imblearn.pipeline import Pipeline as ImbPipeline
 from sklearn.linear_model import LogisticRegression
-from applybn.feature_selection.ce_feature_select import CausalFeatureSelector
+from applybn.feature_selection.ce_feature_selector import CausalFeatureSelector
 from applybn.feature_extraction.bn_feature_extractor import BNFeatureGenerator
 from applybn.imbalanced.over_sampling.bn_over_sampler import BNOverSampler
 from applybn.anomaly_detection.static_anomaly_detector.tabular_detector import TabularDetector
