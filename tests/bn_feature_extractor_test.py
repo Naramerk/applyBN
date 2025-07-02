@@ -55,7 +55,12 @@ class TestBNFeatureGenerator:
         assert isinstance(transformed_data, pd.DataFrame)
 
         assert len(transformed_data.columns) == len(sample_data.columns) * 2
-        assert all(["lambda_" in col for col in transformed_data.columns[len(sample_data.columns):]])
+        assert all(
+            [
+                "lambda_" in col
+                for col in transformed_data.columns[len(sample_data.columns) :]
+            ]
+        )
 
         lambda_columns = [col for col in transformed_data.columns if "lambda_" in col]
         assert transformed_data[lambda_columns].map(np.isreal).all().all()
